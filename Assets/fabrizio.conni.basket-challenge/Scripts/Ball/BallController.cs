@@ -1,7 +1,5 @@
 using FabrizioConni.BasketChallenge.Utility;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace FabrizioConni.BasketChallenge.Ball
@@ -16,6 +14,8 @@ namespace FabrizioConni.BasketChallenge.Ball
         [SerializeField] private int lineSegmentCount = 30;
         [SerializeField] private float timeStep = 0.1f;
         [SerializeField] private LayerMask collisionMask;
+        [SerializeField]
+        private GameObject HoopCenter;
         #endregion
 
         #region Private Fields
@@ -23,6 +23,7 @@ namespace FabrizioConni.BasketChallenge.Ball
         private Vector2 mouseStartPosition;
         private bool dragging;
         private bool shot;
+        private bool isCancelled;
         private Transform aimOrigin;
         #endregion
 
@@ -39,9 +40,10 @@ namespace FabrizioConni.BasketChallenge.Ball
         private void ShootCanceledCallback(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
             if (shot) return;
+            if (isCancelled) return;
             dragging = false;
             Shoot();
-
+            isCancelled = true;
             Debug.Log("Shoot canceled");
         }
 
@@ -51,6 +53,7 @@ namespace FabrizioConni.BasketChallenge.Ball
             mouseStartPosition = InputManager.MousePosition;
             aimOrigin = transform;
             dragging = true;
+            isCancelled = false;
             Debug.Log("Shoot started");
         }
 
@@ -58,82 +61,38 @@ namespace FabrizioConni.BasketChallenge.Ball
         void Update()
         {
             if (!dragging) return;
-            // Drag
-            Vector2 end = InputManager.MousePosition;
-            Vector2 delta = end - mouseStartPosition;
-            Debug.Log($"Shoot delta: {delta}");
-            // Normalizza il drag rispetto alla risoluzione (coerente su PC e mobile)
-            Vector2 nd = new Vector2(
-                delta.x / Screen.width,
-                delta.y / Screen.height
-            );
-
-            Debug.Log($"Shoot nd: {nd}");
-
-            // Parametri di sensibilità (tuning in Inspector)
-            float horizSensitivity = 3.0f;   // quanto la palla devia lateralmente
-            float vertSensitivity = 2;   // quanto cresce la potenza/arco
-            float baseForward = 1;   // spinta minima in avanti
-            float forwardBoost = 1;  // spinta extra in avanti legata alla potenza
-            float upPower = 5;  // spinta verso l’alto legata alla potenza
-            float lateralPower = 8.0f;   // forza laterale massima
-            float deadzone = 0.005f; // ignora tocchi/piccoli movimenti
-
-            // Estrai componenti intenzionali
-            float horiz = Mathf.Clamp(nd.x * horizSensitivity, -1f, 1f);
-            float vert = Mathf.Clamp(nd.y * vertSensitivity, 0f, 1); // solo su aumenta potenza
-
-            Debug.Log($"Shoot horiz: {horiz} vert: {vert}");
-            // Applica deadzone
-            if (Mathf.Abs(nd.x) < deadzone) horiz = 0f;
-            if (Mathf.Abs(nd.y) < deadzone) vert = 0f;
-
-            // Costruisci la forza nei 3 assi locali
-            Vector3 fForward = aimOrigin.forward * (baseForward + vert * forwardBoost);
-            Vector3 fUp = aimOrigin.up * (vert * upPower);
-            Vector3 fRight = aimOrigin.right * (horiz * lateralPower);
-
-            // Forza finale
-            Vector3 force = fForward + fUp + fRight;
-
+            Vector3 force = Vector3.zero;
+            ShootTrajectory(ref force);
             ShowTrajectory(transform.position, force);
         }
         #endregion
 
-        private void UpdateAim()
+        private void ShootTrajectory(ref Vector3 force)
         {
-            //TO DO : implement aim visualization
-            throw new NotImplementedException();
-        }
-
-        private void Shoot()
-        {
+            
             // Drag
             Vector2 end = InputManager.MousePosition;
             Vector2 delta = end - mouseStartPosition;
-            Debug.Log($"Shoot delta: {delta}");
+
             // Normalizza il drag rispetto alla risoluzione (coerente su PC e mobile)
             Vector2 nd = new Vector2(
                 delta.x / Screen.width,
                 delta.y / Screen.height
             );
 
-            Debug.Log($"Shoot nd: {nd}");
-
             // Parametri di sensibilità (tuning in Inspector)
-            float horizSensitivity = 3.0f;   // quanto la palla devia lateralmente
+            float horizSensitivity = 0.5f;   // quanto la palla devia lateralmente
             float vertSensitivity = 2;   // quanto cresce la potenza/arco
             float baseForward = 1;   // spinta minima in avanti
             float forwardBoost = 1;  // spinta extra in avanti legata alla potenza
             float upPower = 5;  // spinta verso l’alto legata alla potenza
-            float lateralPower = 8.0f;   // forza laterale massima
+            float lateralPower = 2f;   // forza laterale massima
             float deadzone = 0.005f; // ignora tocchi/piccoli movimenti
 
             // Estrai componenti intenzionali
             float horiz = Mathf.Clamp(nd.x * horizSensitivity, -1f, 1f);
             float vert = Mathf.Clamp(nd.y * vertSensitivity, 0f, 1); // solo su aumenta potenza
 
-            Debug.Log($"Shoot horiz: {horiz} vert: {vert}");
             // Applica deadzone
             if (Mathf.Abs(nd.x) < deadzone) horiz = 0f;
             if (Mathf.Abs(nd.y) < deadzone) vert = 0f;
@@ -144,9 +103,15 @@ namespace FabrizioConni.BasketChallenge.Ball
             Vector3 fRight = aimOrigin.right * (horiz * lateralPower);
 
             // Forza finale
-            Vector3 force = fForward + fUp + fRight;
+            force = fForward + fUp + fRight;
 
-            Debug.Log($"Shoot force: {force}");
+        }
+
+        private void Shoot()
+        {
+            // Forza finale
+            Vector3 force = Vector3.zero;
+            ShootTrajectory(ref force);
 
             // Spara
             rb.isKinematic = false;
@@ -182,6 +147,21 @@ namespace FabrizioConni.BasketChallenge.Ball
 
             trajectoryLine.positionCount = lineSegmentCount;
             trajectoryLine.SetPositions(points);
+        }
+
+        public void ResetBall(Transform location)
+        {
+            rb.isKinematic = true;
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            
+            transform.position = SpawnerFactory.GetPosition(HoopCenter.transform.position, Random.Range(1.2f, 1.5f));
+            Vector3 direction = HoopCenter.transform.position - transform.position;
+            Quaternion rotation = Quaternion.LookRotation(direction);
+            transform.rotation = rotation;
+            shot = false;
+            dragging = false;
+            trajectoryLine.positionCount = 0;
         }
     }
 }
