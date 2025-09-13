@@ -1,0 +1,17 @@
+{
+    "name": "basket-challange_GameManager",
+    "rootNamespace": "",
+    "references": [
+        "GUID:9ec44e60f82d04b47b842cedf30219d7",
+        "GUID:c296619ef72bd8a4f8e0f6af3930417c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
