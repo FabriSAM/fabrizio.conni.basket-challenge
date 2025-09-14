@@ -1,11 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using FabrizioConni.BasketChallenge.Ball;
 using TMPro;
-using System;
 using UnityEngine.SceneManagement;
-using Codice.Client.Common.GameUI;
+using System.Collections;
 
 public class GameMngr : MonoBehaviour
 {
@@ -18,7 +15,9 @@ public class GameMngr : MonoBehaviour
     private FixedCamera mainCamera;
     private Timer gameTimer;
     private UI_Timer uTimer;
+    private UI_Timer uPower;
     private TMP_Text playerScoreText;
+    private TMP_Text timeLeftText;
     private int playerScore;
     private int failCount;
     private int totalShots;
@@ -66,8 +65,11 @@ public class GameMngr : MonoBehaviour
         failSystems = FindObjectsOfType<FailSystem>();
         mainCamera = FindObjectOfType<FixedCamera>();
         gameTimer = FindObjectOfType<Timer>();
-        uTimer = FindObjectOfType<UI_Timer>();
+        UI_Timer[] timers = FindObjectsOfType<UI_Timer>();
+        uTimer = timers[0];
+        uPower = timers[1];
         playerScoreText = GameObject.Find("score_text").GetComponent<TMP_Text>();
+        timeLeftText = GameObject.Find("timer_text").GetComponent<TMP_Text>();
     }
 
     private void DelegatesSubscribiption()
@@ -83,10 +85,16 @@ public class GameMngr : MonoBehaviour
 
         // Subscribe to ball reset complete event
         ballController.onResetComplete += OnBallResetComplete;
+        ballController.onShotPowerChange += OnShotPowerChange;
 
         // Subscribe to timer events
         gameTimer.OnTimerEnd += OnTimerEnd;
         gameTimer.OnTimerUpdatePerc += OnTimerUpdatePerc;
+    }
+
+    private void OnShotPowerChange(float arg0)
+    {
+        uPower.SetProgress(arg0);
     }
 
     private void DelegatesDesubscribiption()
@@ -102,6 +110,8 @@ public class GameMngr : MonoBehaviour
 
         // Subscribe to ball reset complete event
         ballController.onResetComplete -= OnBallResetComplete;
+        ballController.onShotPowerChange -= OnShotPowerChange;
+
 
         // Subscribe to timer events
         gameTimer.OnTimerEnd -= OnTimerEnd;
@@ -137,6 +147,8 @@ public class GameMngr : MonoBehaviour
     private void OnTimerUpdatePerc(float arg0)
     {
         uTimer.SetProgress(arg0);
+        
+        timeLeftText.text = ((int)(gameTimer.TimeRemaning)).ToString();
     }
     private void OnTimerEnd()
     {
