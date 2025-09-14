@@ -131,7 +131,6 @@ public class GameMngr : MonoBehaviour
 
     private void OnScoreChanged(int arg0)
     {
-        Debug.Log("Score Updated: " + arg0);
         scoreSystem.ResetIncrementScore();
         ResetBall();
         playerScore = arg0;

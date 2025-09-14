@@ -36,11 +36,7 @@ public class FixedCamera : MonoBehaviour
 
     public void SetPosition ()
     {
-        Debug.Log($"Offset is {offset}");
-        //transform.position = player.transform.position + offset;
-
         transform.position = player.transform.TransformPoint(offset);
-        Debug.Log($"OffSetCalculate {transform.position - player.transform.position}");
         transform.rotation = player.transform.rotation;
     }
 }
