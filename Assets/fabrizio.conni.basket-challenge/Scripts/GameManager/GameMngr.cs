@@ -14,6 +14,8 @@ public class GameMngr : MonoBehaviour
     private ScoreSystem scoreSystem;
     [SerializeField]
     private FailSystem[] failSystems;
+    [SerializeField]
+    private FixedCamera mainCamera;
 
     private void Awake()
     {
@@ -33,6 +35,16 @@ public class GameMngr : MonoBehaviour
             fs.onFail += OnFail;
         }
         scoreSystem.onScoreChanged += OnScoreChanged;
+        ballController.onResetComplete += OnBallResetComplete;
+
+        print($"Ball Controller is {ballController.gameObject}");
+        mainCamera.SetPlayer(ballController.gameObject);
+        mainCamera.SetHoopPosition(ballController.HoopCenterLocation);
+    }
+
+    private void OnBallResetComplete(Transform arg0)
+    {
+        mainCamera.SetPosition();
     }
 
     private void OnFail()
@@ -46,13 +58,9 @@ public class GameMngr : MonoBehaviour
         scoreSystem.ResetIncrementScore();
         ResetBall();
     }
-        private void ResetBall()
+
+    private void ResetBall()
     {
-        GameObject emptyGO = new GameObject();
-        emptyGO.transform.position = new Vector3(-0.699000001f, 0.52700001f, 0);
-        emptyGO.transform.rotation = new Quaternion(0, 0.707106829f, 0, -0.707106829f);
-
-
-        ballController.ResetBall(emptyGO.transform);
+        ballController.ResetBall();
     }
 }

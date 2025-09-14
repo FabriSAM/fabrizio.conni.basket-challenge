@@ -11,6 +11,5 @@ public class HoopSystem : MonoBehaviour
     {
         Debug.Log("Collision with: " + collision.gameObject.name);
         hitHoop?.Invoke();
-
     }
 }

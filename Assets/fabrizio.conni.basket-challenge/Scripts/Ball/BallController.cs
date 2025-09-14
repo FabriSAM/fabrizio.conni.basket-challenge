@@ -1,6 +1,7 @@
 using FabrizioConni.BasketChallenge.Utility;
 
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace FabrizioConni.BasketChallenge.Ball
 {
@@ -14,6 +15,7 @@ namespace FabrizioConni.BasketChallenge.Ball
         [SerializeField] private int lineSegmentCount = 30;
         [SerializeField] private float timeStep = 0.1f;
         [SerializeField] private LayerMask collisionMask;
+
         [SerializeField]
         private GameObject HoopCenter;
         #endregion
@@ -25,13 +27,16 @@ namespace FabrizioConni.BasketChallenge.Ball
         private bool shot;
         private bool isCancelled;
         private Transform aimOrigin;
+
+        public Vector3 HoopCenterLocation { get { return HoopCenter.transform.position; } }
         #endregion
 
+        public UnityAction <Transform> onResetComplete;
 
+      
         #region Monobehaviour Callbacks
         private void Awake()
         {
-            Debug.Log("Ehi Sono Uno script");
             rb = GetComponent<Rigidbody>();
             InputManager.Computer.Shoot.started += ShootStartCallback;
             InputManager.Computer.Shoot.canceled += ShootCanceledCallback;
@@ -44,7 +49,6 @@ namespace FabrizioConni.BasketChallenge.Ball
             dragging = false;
             Shoot();
             isCancelled = true;
-            Debug.Log("Shoot canceled");
         }
 
         private void ShootStartCallback(UnityEngine.InputSystem.InputAction.CallbackContext context)
@@ -54,7 +58,6 @@ namespace FabrizioConni.BasketChallenge.Ball
             aimOrigin = transform;
             dragging = true;
             isCancelled = false;
-            Debug.Log("Shoot started");
         }
 
         // Update is called once per frame
@@ -149,7 +152,7 @@ namespace FabrizioConni.BasketChallenge.Ball
             trajectoryLine.SetPositions(points);
         }
 
-        public void ResetBall(Transform location)
+        public void ResetBall()
         {
             rb.isKinematic = true;
             rb.velocity = Vector3.zero;
@@ -162,6 +165,7 @@ namespace FabrizioConni.BasketChallenge.Ball
             shot = false;
             dragging = false;
             trajectoryLine.positionCount = 0;
+            onResetComplete?.Invoke(transform);
         }
     }
 }
