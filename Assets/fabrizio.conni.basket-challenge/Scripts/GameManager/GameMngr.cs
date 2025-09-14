@@ -4,25 +4,24 @@ using UnityEngine;
 using FabrizioConni.BasketChallenge.Ball;
 using TMPro;
 using System;
+using UnityEngine.SceneManagement;
+using Codice.Client.Common.GameUI;
 
 public class GameMngr : MonoBehaviour
 {
     public static GameMngr Instance { get; private set; }
 
-    [SerializeField]
+
     private BallController ballController;
-    [SerializeField]
     private ScoreSystem scoreSystem;
-    [SerializeField]
     private FailSystem[] failSystems;
-    [SerializeField]
     private FixedCamera mainCamera;
-    [SerializeField]
     private Timer gameTimer;
-    [SerializeField]
     private UI_Timer uTimer;
-    [SerializeField]
     private TMP_Text playerScoreText;
+    private int playerScore;
+    private int failCount;
+    private int totalShots;
 
     private void Awake()
     {
@@ -37,20 +36,76 @@ public class GameMngr : MonoBehaviour
             return;
         }
 
+        Init();
+
+    }
+
+    private void Init()
+    {
+        // Find references
+        FindReferences();
+
+        // Subscribe to events
+        DelegatesSubscribiption();
+
+        // Initialize Main Camera
+        mainCamera.SetPlayer(ballController.gameObject);
+        mainCamera.SetHoopPosition(ballController.HoopCenterLocation);
+
+        // Start Game
+        gameTimer.StartTimer();
+        scoreSystem.ResetScore();
+        playerScoreText.text = "0";
+
+    }
+
+    private void FindReferences()
+    {
+        ballController = FindObjectOfType<BallController>();
+        scoreSystem = FindObjectOfType<ScoreSystem>();
+        failSystems = FindObjectsOfType<FailSystem>();
+        mainCamera = FindObjectOfType<FixedCamera>();
+        gameTimer = FindObjectOfType<Timer>();
+        uTimer = FindObjectOfType<UI_Timer>();
+        playerScoreText = GameObject.Find("score_text").GetComponent<TMP_Text>();
+    }
+
+    private void DelegatesSubscribiption()
+    {
+        // Subscribe to fail events
         foreach (FailSystem fs in failSystems)
         {
             fs.onFail += OnFail;
         }
+
+        // Subscribe to score change event
         scoreSystem.onScoreChanged += OnScoreChanged;
+
+        // Subscribe to ball reset complete event
         ballController.onResetComplete += OnBallResetComplete;
 
-        print($"Ball Controller is {ballController.gameObject}");
-        mainCamera.SetPlayer(ballController.gameObject);
-        mainCamera.SetHoopPosition(ballController.HoopCenterLocation);
+        // Subscribe to timer events
+        gameTimer.OnTimerEnd += OnTimerEnd;
+        gameTimer.OnTimerUpdatePerc += OnTimerUpdatePerc;
+    }
 
-        TimerSubscribe();
-        gameTimer.StartTimer();
+    private void DelegatesDesubscribiption()
+    {
+        // Subscribe to fail events
+        foreach (FailSystem fs in failSystems)
+        {
+            fs.onFail -= OnFail;
+        }
 
+        // Subscribe to score change event
+        scoreSystem.onScoreChanged -= OnScoreChanged;
+
+        // Subscribe to ball reset complete event
+        ballController.onResetComplete -= OnBallResetComplete;
+
+        // Subscribe to timer events
+        gameTimer.OnTimerEnd -= OnTimerEnd;
+        gameTimer.OnTimerUpdatePerc -= OnTimerUpdatePerc;
     }
 
     private void OnBallResetComplete(Transform arg0)
@@ -60,6 +115,7 @@ public class GameMngr : MonoBehaviour
 
     private void OnFail()
     {
+        failCount++;
         ResetBall();
     }
 
@@ -68,27 +124,45 @@ public class GameMngr : MonoBehaviour
         Debug.Log("Score Updated: " + arg0);
         scoreSystem.ResetIncrementScore();
         ResetBall();
+        playerScore = arg0;
         playerScoreText.text = arg0.ToString();
     }
 
     private void ResetBall()
     {
+        totalShots++;
         ballController.ResetBall();
-    }
-
-    private void TimerSubscribe()
-    {
-        gameTimer.OnTimerEnd += OnTimerEnd;
-        gameTimer.OnTimerUpdatePerc += OnTimerUpdatePerc;
     }
 
     private void OnTimerUpdatePerc(float arg0)
     {
         uTimer.SetProgress(arg0);
     }
-
     private void OnTimerEnd()
     {
-        Debug.Log("Match Ended");
+        SceneManager.LoadScene("EndMenu");
+    }
+
+    private void OnLevelWasLoaded(int level)
+    {
+        switch (level)
+        {
+            case 0:
+                //Main Menu
+                DelegatesDesubscribiption();
+                break;
+            case 1:
+                //Game Scene
+                //Reassign references
+                Init();
+                break;
+            case 2:
+                //End Menu
+                DelegatesDesubscribiption();
+                FindObjectOfType<UI_EndMenu>().SetStats(totalShots, failCount, playerScore);
+                break;
+            default:
+                break;
+        }
     }
 }

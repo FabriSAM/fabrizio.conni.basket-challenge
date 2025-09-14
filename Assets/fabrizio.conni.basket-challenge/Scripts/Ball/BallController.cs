@@ -42,6 +42,12 @@ namespace FabrizioConni.BasketChallenge.Ball
             InputManager.Computer.Shoot.canceled += ShootCanceledCallback;
         }
 
+        private void OnDestroy()
+        {
+            InputManager.Computer.Shoot.started -= ShootStartCallback;
+            InputManager.Computer.Shoot.canceled -= ShootCanceledCallback;
+        }
+
         private void ShootCanceledCallback(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
             if (shot) return;

@@ -1,17 +1,25 @@
-VisualElement {
-	.title {
-	  font-size: 32px;
-	  color: white;
-	  unity-text-align: center;
-	  margin-top: 20px;
-	}
+.menu-container {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.6);
+  width: 100%;
+  height: 100%;
+}
 
-	Button {
-	  width: 200px;
-	  height: 40px;
-	  margin: 10px auto;
-	  background-color: #ff6600;
-	  color: white;
-	}
+.title {
+  font-size: 36px;
+  color: #FFD700;
+  margin-bottom: 30px;
+  unity-text-align: center;
+}
 
+Button {
+  width: 220px;
+  height: 45px;
+  margin: 12px;
+  background-color: #ff6600;
+  color: white;
+  font-size: 20px;
 }
