@@ -14,7 +14,7 @@ public class Timer : MonoBehaviour
 
     public UnityAction OnTimerEnd;
     public UnityAction OnTimerStart;
-    public UnityAction<float> OnTimerUpdate;
+    public UnityAction<float> OnTimerUpdatePerc;
 
     public void StartTimer()
     {
@@ -30,7 +30,8 @@ public class Timer : MonoBehaviour
             if (timeRemaining > 0)
             {
                 timeRemaining -= Time.deltaTime;
-                OnTimerUpdate?.Invoke(timeRemaining);
+
+                OnTimerUpdatePerc?.Invoke(timeRemaining/timeLimit);
             }
             else
             {

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using FabrizioConni.BasketChallenge.Ball;
+using TMPro;
 using System;
 
 public class GameMngr : MonoBehaviour
@@ -18,6 +19,10 @@ public class GameMngr : MonoBehaviour
     private FixedCamera mainCamera;
     [SerializeField]
     private Timer gameTimer;
+    [SerializeField]
+    private UI_Timer uTimer;
+    [SerializeField]
+    private TMP_Text playerScoreText;
 
     private void Awake()
     {
@@ -63,6 +68,7 @@ public class GameMngr : MonoBehaviour
         Debug.Log("Score Updated: " + arg0);
         scoreSystem.ResetIncrementScore();
         ResetBall();
+        playerScoreText.text = arg0.ToString();
     }
 
     private void ResetBall()
@@ -73,12 +79,12 @@ public class GameMngr : MonoBehaviour
     private void TimerSubscribe()
     {
         gameTimer.OnTimerEnd += OnTimerEnd;
-        gameTimer.OnTimerUpdate += OnTimerUpdate;
+        gameTimer.OnTimerUpdatePerc += OnTimerUpdatePerc;
     }
 
-    private void OnTimerUpdate(float arg0)
+    private void OnTimerUpdatePerc(float arg0)
     {
-        Debug.Log("Time Remaining: " + arg0);
+        uTimer.SetProgress(arg0);
     }
 
     private void OnTimerEnd()
