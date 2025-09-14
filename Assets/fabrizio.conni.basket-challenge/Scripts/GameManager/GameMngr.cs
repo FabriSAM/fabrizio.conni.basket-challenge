@@ -16,6 +16,8 @@ public class GameMngr : MonoBehaviour
     private FailSystem[] failSystems;
     [SerializeField]
     private FixedCamera mainCamera;
+    [SerializeField]
+    private Timer gameTimer;
 
     private void Awake()
     {
@@ -40,6 +42,10 @@ public class GameMngr : MonoBehaviour
         print($"Ball Controller is {ballController.gameObject}");
         mainCamera.SetPlayer(ballController.gameObject);
         mainCamera.SetHoopPosition(ballController.HoopCenterLocation);
+
+        TimerSubscribe();
+        gameTimer.StartTimer();
+
     }
 
     private void OnBallResetComplete(Transform arg0)
@@ -62,5 +68,21 @@ public class GameMngr : MonoBehaviour
     private void ResetBall()
     {
         ballController.ResetBall();
+    }
+
+    private void TimerSubscribe()
+    {
+        gameTimer.OnTimerEnd += OnTimerEnd;
+        gameTimer.OnTimerUpdate += OnTimerUpdate;
+    }
+
+    private void OnTimerUpdate(float arg0)
+    {
+        Debug.Log("Time Remaining: " + arg0);
+    }
+
+    private void OnTimerEnd()
+    {
+        Debug.Log("Match Ended");
     }
 }
