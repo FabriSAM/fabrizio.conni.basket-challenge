@@ -1,0 +1,17 @@
+VisualElement {
+	.title {
+	  font-size: 32px;
+	  color: white;
+	  unity-text-align: center;
+	  margin-top: 20px;
+	}
+
+	Button {
+	  width: 200px;
+	  height: 40px;
+	  margin: 10px auto;
+	  background-color: #ff6600;
+	  color: white;
+	}
+
+}
