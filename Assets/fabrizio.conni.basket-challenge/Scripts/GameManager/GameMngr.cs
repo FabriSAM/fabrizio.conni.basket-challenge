@@ -22,6 +22,9 @@ public class GameMngr : MonoBehaviour
     private int failCount;
     private int totalShots;
 
+    private float startBonusTime;
+    private float endBonusTime;
+    private bool bonusActive;
     private void Awake()
     {
         if (Instance == null)
@@ -50,6 +53,10 @@ public class GameMngr : MonoBehaviour
         // Initialize Main Camera
         mainCamera.SetPlayer(ballController.gameObject);
         mainCamera.SetHoopPosition(ballController.HoopCenterLocation);
+
+        //startBonusTime = Random.Range(5f, 60f);
+        startBonusTime = 58f;
+        endBonusTime = startBonusTime - 3f;
 
         // Start Game
         gameTimer.StartTimer();
@@ -146,8 +153,22 @@ public class GameMngr : MonoBehaviour
     private void OnTimerUpdatePerc(float arg0)
     {
         uTimer.SetProgress(arg0);
-        
-        timeLeftText.text = ((int)(gameTimer.TimeRemaning)).ToString();
+        int timeRaianing = (int)(gameTimer.TimeRemaning);
+        timeLeftText.text = (timeRaianing).ToString();
+
+        if(timeRaianing <= startBonusTime && timeRaianing >= endBonusTime && !bonusActive)
+        {
+            bonusActive = true;
+            scoreSystem.EnableBonus();
+            
+        }
+
+        if(timeRaianing < endBonusTime)
+        {
+            scoreSystem.DisableBonus();
+            bonusActive = false;
+        }
+            
     }
     private void OnTimerEnd()
     {
