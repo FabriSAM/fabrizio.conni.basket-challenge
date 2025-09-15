@@ -493,6 +493,7 @@ MonoBehaviour:
   hoopSystem: {fileID: 1029877275}
   bonusCollider: {fileID: 103564286}
   bonusArea: {fileID: 1050109452}
+  bonusText: {fileID: 777904914}
 --- !u!4 &103564285
 Transform:
   m_ObjectHideFlags: 0
@@ -1390,7 +1391,7 @@ GameObject:
   - component: {fileID: 777904915}
   - component: {fileID: 777904914}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: powerup_text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

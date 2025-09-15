@@ -22,6 +22,8 @@ public class GameMngr : MonoBehaviour
     private int failCount;
     private int totalShots;
 
+    private int[] bonusValues = new int[] { 4, 6, 8 };
+
     private float startBonusTime;
     private float endBonusTime;
     private bool bonusActive;
@@ -159,7 +161,9 @@ public class GameMngr : MonoBehaviour
         if(timeRaianing <= startBonusTime && timeRaianing >= endBonusTime && !bonusActive)
         {
             bonusActive = true;
-            scoreSystem.EnableBonus();
+            int index = Random.Range(0, bonusValues.Length);
+            Debug.Log("Bonus attivato! " + bonusValues[index] + " punti per canestro! " + index);
+            scoreSystem.EnableBonus(bonusValues[index]);
             
         }
 

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using TMPro;
 
 public class ScoreSystem : MonoBehaviour
 {
@@ -14,9 +15,12 @@ public class ScoreSystem : MonoBehaviour
     private Collider bonusCollider;
     [SerializeField]
     private GameObject bonusArea;
+    [SerializeField]
+    private TMP_Text bonusText;
 
     private int score;
     private int currentIncrementScore;
+    private int currentBonus;
 
     public UnityAction<int> onScoreChanged;
 
@@ -36,8 +40,7 @@ public class ScoreSystem : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        Debug.Log("Collision");
-        bonusCollider.enabled = false;
+        currentIncrementScore += currentBonus;
     }
 
     private void Awake()
@@ -47,7 +50,7 @@ public class ScoreSystem : MonoBehaviour
 
     private void OnHitHoop()
     {
-        currentIncrementScore = 2;
+        currentIncrementScore += 2;
     }
 
     public void ResetScore()
@@ -60,14 +63,17 @@ public class ScoreSystem : MonoBehaviour
         currentIncrementScore = 0;
     }
 
-    public void EnableBonus()
+    public void EnableBonus(int newBonus)
     {
+        currentBonus = newBonus;
         bonusCollider.enabled = true;
         bonusArea.SetActive(true);
+        bonusText.text = "+" + newBonus.ToString();
     }
 
     public void DisableBonus()
     {
+        currentBonus = 0;
         bonusCollider.enabled = false;
         bonusArea.SetActive(false);
     }
