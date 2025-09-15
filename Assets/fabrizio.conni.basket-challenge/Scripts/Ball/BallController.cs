@@ -60,6 +60,7 @@ namespace FabrizioConni.BasketChallenge.Ball
 
         private void ShootStartCallback(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
+            Debug.Log(context.GetType());
             if (shot) return;
             mouseStartPosition = InputManager.MousePosition;
             aimOrigin = transform;
