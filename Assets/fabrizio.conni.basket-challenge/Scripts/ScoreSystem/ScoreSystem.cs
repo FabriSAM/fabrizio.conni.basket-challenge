@@ -10,6 +10,10 @@ public class ScoreSystem : MonoBehaviour
 
     [SerializeField]
     private HoopSystem hoopSystem;
+    [SerializeField]
+    private Collider bonusCollider;
+    [SerializeField]
+    private GameObject bonusArea;
 
     private int score;
     private int currentIncrementScore;
@@ -23,13 +27,17 @@ public class ScoreSystem : MonoBehaviour
             currentIncrementScore = 3;
         }
         score += currentIncrementScore;
-        
-        Debug.Log("Score: " + score);
     }
 
     private void OnTriggerExit(Collider other)
     {
         onScoreChanged?.Invoke(score);
+    }
+
+    private void OnCollisionEnter(Collision other)
+    {
+        Debug.Log("Collision");
+        bonusCollider.enabled = false;
     }
 
     private void Awake()
@@ -51,4 +59,17 @@ public class ScoreSystem : MonoBehaviour
     { 
         currentIncrementScore = 0;
     }
+
+    public void EnableBonus()
+    {
+        bonusCollider.enabled = true;
+        bonusArea.SetActive(true);
+    }
+
+    public void DisableBonus()
+    {
+        bonusCollider.enabled = false;
+        bonusArea.SetActive(false);
+    }
 }
+

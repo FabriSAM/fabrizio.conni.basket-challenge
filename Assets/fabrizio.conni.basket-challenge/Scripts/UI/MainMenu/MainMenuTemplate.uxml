@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/fabrizio.conni.basket-challenge/Scripts/UI/MainMenu/MainMenuStyle.uss?fileID=7433441132597879392&amp;guid=465305695d0913142a3867b472360478&amp;type=3#MainMenuStyle" />
+    <ui:VisualElement name="main-menu" class="menu-container">
+        <ui:Label name="title" text="Basket Challenge" class="title" />
+        <ui:Button name="play-button" text="Gioca" />
+        <ui:Button name="career-button" text="Modalità Carriera" />
+        <ui:Button name="settings-button" text="Impostazioni" />
+        <ui:Button name="exit-button" text="Esci" />
+    </ui:VisualElement>
+</ui:UXML>
