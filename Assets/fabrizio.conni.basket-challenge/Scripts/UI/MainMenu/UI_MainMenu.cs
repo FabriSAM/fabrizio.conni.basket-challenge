@@ -22,11 +22,34 @@ public class UI_MainMenu : MonoBehaviour
         {
             Application.Quit();
         };
+
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnEnable()
     {
-        
+        Label titleLabel = uiDocument.rootVisualElement.Q<Label>("title");
+
+        if (Screen.width <= 720)
+        {
+            titleLabel.style.fontSize = 20;
+            List<Button> buttons = uiDocument.rootVisualElement.Query<Button>().ToList();
+
+            foreach (var button in buttons)
+            {
+                button.style.fontSize = 10;
+            }
+        }
+        else
+        {
+            titleLabel.style.fontSize = 48;
+            List<Button> buttons = uiDocument.rootVisualElement.Query<Button>().ToList();
+
+            foreach (var button in buttons)
+            {
+                button.style.fontSize = 20;
+            }
+        }
+
+
     }
 }

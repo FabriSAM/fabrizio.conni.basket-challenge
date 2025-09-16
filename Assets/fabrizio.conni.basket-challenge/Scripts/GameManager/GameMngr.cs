@@ -41,10 +41,9 @@ public class GameMngr : MonoBehaviour
         }
 
         Init();
+}
 
-    }
-
-    private void Init()
+private void Init()
     {
         // Find references
         FindReferences();
@@ -201,4 +200,6 @@ public class GameMngr : MonoBehaviour
                 break;
         }
     }
+
+
 }
