@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/fabrizio.conni.basket-challenge/Scripts/UI/EndMenu/EndMenuStyle.uss?fileID=7433441132597879392&amp;guid=48f2fc8fe4af1a7408e709e57a18b455&amp;type=3#EndMenuStyle" />
+    <ui:VisualElement name="end-level-menu" class="menu-container">
+        <ui:Label name="title" text="Fine Livello" class="title" />
+        <ui:Label name="shots-total" text="Tiri Totali: 0" class="stat" />
+        <ui:Label name="shots-made" text="Tiri Corretti: 0" class="stat" />
+        <ui:Label name="shots-missed" text="Tiri Sbagliati: 0" class="stat" />
+        <ui:Label name="score" text="Punteggio: 0" class="score" />
+        <ui:Button name="retry-button" text="Riprova" />
+        <ui:Button name="main-menu-button" text="Menu Principale" />
+    </ui:VisualElement>
+</ui:UXML>
