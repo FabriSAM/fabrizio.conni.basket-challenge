@@ -6,6 +6,12 @@ using System.Collections;
 
 public class GameMngr : MonoBehaviour
 {
+    [SerializeField, Tooltip("Delta from start to end bounus time (in Seconds)")]
+    private int deltaBounsTime = 10;
+
+
+    private Timer gameTimer;
+
     public static GameMngr Instance { get; private set; }
 
 
@@ -13,20 +19,15 @@ public class GameMngr : MonoBehaviour
     private ScoreSystem scoreSystem;
     private FailSystem[] failSystems;
     private FixedCamera mainCamera;
-    private Timer gameTimer;
-    private UI_Timer uTimer;
-    private UI_Timer uPower;
-    private TMP_Text playerScoreText;
-    private TMP_Text timeLeftText;
+       
+    private FireballSystem fireballSystem;
     private int playerScore;
     private int failCount;
     private int totalShots;
 
-    private int[] bonusValues = new int[] { 4, 6, 8 };
-
-    private float startBonusTime;
-    private float endBonusTime;
+    private float[] bonusTime = new float[2];
     private bool bonusActive;
+
     private void Awake()
     {
         if (Instance == null)
@@ -55,15 +56,13 @@ private void Init()
         mainCamera.SetPlayer(ballController.gameObject);
         mainCamera.SetHoopPosition(ballController.HoopCenterLocation);
 
-        //startBonusTime = Random.Range(5f, 60f);
-        startBonusTime = 58f;
-        endBonusTime = startBonusTime - 3f;
+        bonusTime[1] = Random.Range(5f, 60f);
+        bonusTime[0] = bonusTime[1] - 10f;
 
         // Start Game
         gameTimer.StartTimer();
         scoreSystem.ResetScore();
-        playerScoreText.text = "0";
-
+        
     }
 
     private void FindReferences()
@@ -72,14 +71,12 @@ private void Init()
         scoreSystem = FindObjectOfType<ScoreSystem>();
         failSystems = FindObjectsOfType<FailSystem>();
         mainCamera = FindObjectOfType<FixedCamera>();
-        gameTimer = FindObjectOfType<Timer>();
-        UI_Timer[] timers = FindObjectsOfType<UI_Timer>();
-        uTimer = timers[0];
-        uPower = timers[1];
-        playerScoreText = GameObject.Find("score_text").GetComponent<TMP_Text>();
-        timeLeftText = GameObject.Find("timer_text").GetComponent<TMP_Text>();
+        gameTimer = GameObject.Find("MatchTimer").GetComponent<Timer>();
+
+        fireballSystem = FindObjectOfType<FireballSystem>();
     }
 
+    #region Delegate Subscription/Desubscription
     private void DelegatesSubscribiption()
     {
         // Subscribe to fail events
@@ -93,16 +90,12 @@ private void Init()
 
         // Subscribe to ball reset complete event
         ballController.onResetComplete += OnBallResetComplete;
-        ballController.onShotPowerChange += OnShotPowerChange;
 
         // Subscribe to timer events
         gameTimer.OnTimerEnd += OnTimerEnd;
         gameTimer.OnTimerUpdatePerc += OnTimerUpdatePerc;
-    }
 
-    private void OnShotPowerChange(float arg0)
-    {
-        uPower.SetProgress(arg0);
+        fireballSystem.onFireballActivate += OnFireballActivate;
     }
 
     private void DelegatesDesubscribiption()
@@ -118,65 +111,78 @@ private void Init()
 
         // Subscribe to ball reset complete event
         ballController.onResetComplete -= OnBallResetComplete;
-        ballController.onShotPowerChange -= OnShotPowerChange;
-
 
         // Subscribe to timer events
         gameTimer.OnTimerEnd -= OnTimerEnd;
         gameTimer.OnTimerUpdatePerc -= OnTimerUpdatePerc;
-    }
 
+        fireballSystem.onFireballActivate -= OnFireballActivate;
+    }
+    #endregion
+
+    #region FailSystem Callbacks
+    private void OnFail()
+    {
+        failCount++;
+        fireballSystem.ResetFireballPoints();
+        scoreSystem.FireballBonus = fireballSystem.IsFireballActive;
+        ResetBall();
+    }
+    #endregion
+
+    #region Fireball Callbacks
+    private void OnFireballActivate()
+    {
+        scoreSystem.FireballBonus = true;
+    }
+    #endregion
+
+    #region Score Callbacks
+    private void OnScoreChanged(int score, int delta)
+    {
+        ResetBall();
+        playerScore = score;
+        fireballSystem.AddFireballPoint(delta);
+    }
+    #endregion
+
+    #region BallController
+    private void ResetBall()
+    {
+        totalShots++;
+        
+        ballController.ResetBall();
+    }
     private void OnBallResetComplete(Transform arg0)
     {
         mainCamera.SetPosition();
     }
+    #endregion
 
-    private void OnFail()
-    {
-        failCount++;
-        ResetBall();
-    }
-
-    private void OnScoreChanged(int arg0)
-    {
-        scoreSystem.ResetIncrementScore();
-        ResetBall();
-        playerScore = arg0;
-        playerScoreText.text = arg0.ToString();
-    }
-
-    private void ResetBall()
-    {
-        totalShots++;
-        ballController.ResetBall();
-    }
-
+    #region Timer Callbacks
     private void OnTimerUpdatePerc(float arg0)
     {
-        uTimer.SetProgress(arg0);
         int timeRaianing = (int)(gameTimer.TimeRemaning);
-        timeLeftText.text = (timeRaianing).ToString();
 
-        if(timeRaianing <= startBonusTime && timeRaianing >= endBonusTime && !bonusActive)
+        if(timeRaianing <= bonusTime[1] && timeRaianing >= bonusTime[0] && !bonusActive)
         {
             bonusActive = true;
-            int index = Random.Range(0, bonusValues.Length);
-            Debug.Log("Bonus attivato! " + bonusValues[index] + " punti per canestro! " + index);
-            scoreSystem.EnableBonus(bonusValues[index]);
             
+            scoreSystem.EnableBonus();            
         }
 
-        if(timeRaianing < endBonusTime)
+        if(timeRaianing < bonusTime[0])
         {
             scoreSystem.DisableBonus();
             bonusActive = false;
-        }
-            
+        }            
     }
+
     private void OnTimerEnd()
     {
         SceneManager.LoadScene("EndMenu");
     }
+    #endregion
 
     private void OnLevelWasLoaded(int level)
     {
