@@ -27,15 +27,19 @@ namespace FabrizioConni.BasketChallenge.Ball
         private bool shot;
         private bool isCancelled;
         private Transform aimOrigin;
+        private UI_Timer uPower;
 
         public Vector3 HoopCenterLocation { get { return HoopCenter.transform.position; } }
         #endregion
 
         public UnityAction<Transform> onResetComplete;
-        public UnityAction<float> onShotPowerChange;
 
       
         #region Monobehaviour Callbacks
+        private void Start()
+        {
+            uPower = GameObject.Find("ShootPower").GetComponent<UI_Timer>();
+        }   
         private void Awake()
         {
             rb = GetComponent<Rigidbody>();
@@ -59,8 +63,7 @@ namespace FabrizioConni.BasketChallenge.Ball
         }
 
         private void ShootStartCallback(UnityEngine.InputSystem.InputAction.CallbackContext context)
-        {
-            Debug.Log(context.GetType());
+        {            
             if (shot) return;
             mouseStartPosition = InputManager.MousePosition;
             aimOrigin = transform;
@@ -113,7 +116,8 @@ namespace FabrizioConni.BasketChallenge.Ball
             // Estrai componenti intenzionali
             float horiz = Mathf.Clamp(nd.x * horizSensitivity, -1f, 1f);
             float vert = Mathf.Clamp(nd.y * vertSensitivity, 0f, 1); // solo su aumenta potenza
-            onShotPowerChange?.Invoke(vert);
+
+            uPower.SetProgress(vert);
 
             // Applica deadzone
             if (Mathf.Abs(nd.x) < deadzone) horiz = 0f;

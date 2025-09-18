@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using TMPro;
@@ -18,11 +15,15 @@ public class ScoreSystem : MonoBehaviour
     [SerializeField]
     private TMP_Text bonusText;
 
+    private TMP_Text playerScoreText;
+
     private int score;
     private int currentIncrementScore;
     private int currentBonus;
+    private int[] bonusValues = new int[] { 4, 6, 8 };
+    public bool FireballBonus { get; set; }
 
-    public UnityAction<int> onScoreChanged;
+    public UnityAction<int, int> onScoreChanged;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -30,17 +31,32 @@ public class ScoreSystem : MonoBehaviour
         {
             currentIncrementScore = 3;
         }
+
+        if (FireballBonus)
+        {
+            currentIncrementScore *= 2;
+        }
         score += currentIncrementScore;
+    }
+
+    private void Start()
+    {
+        playerScoreText = GameObject.Find("score_text").GetComponent<TMP_Text>();
+        playerScoreText.text = "0";
     }
 
     private void OnTriggerExit(Collider other)
     {
-        onScoreChanged?.Invoke(score);
+        Debug.Log($"Score: {score}, Increment: {currentIncrementScore}, currentBonus: {currentBonus}, FireballBonus: {FireballBonus}");
+        playerScoreText.text = score.ToString();        
+        onScoreChanged?.Invoke(score, currentIncrementScore);
+        ResetIncrementScore();
     }
 
     private void OnCollisionEnter(Collision other)
     {
-        currentIncrementScore += currentBonus;
+        Debug.Log("Collision with: " + other.gameObject.name);
+        currentIncrementScore = 2 + currentBonus;
     }
 
     private void Awake()
@@ -50,7 +66,9 @@ public class ScoreSystem : MonoBehaviour
 
     private void OnHitHoop()
     {
-        currentIncrementScore += 2;
+        if (currentIncrementScore != 0) return;
+        
+        currentIncrementScore = 2;
     }
 
     public void ResetScore()
@@ -63,8 +81,10 @@ public class ScoreSystem : MonoBehaviour
         currentIncrementScore = 0;
     }
 
-    public void EnableBonus(int newBonus)
+    public void EnableBonus()
     {
+        int index = Random.Range(0, bonusValues.Length);
+        int newBonus = bonusValues[index];
         currentBonus = newBonus;
         bonusCollider.enabled = true;
         bonusArea.SetActive(true);
@@ -73,6 +93,7 @@ public class ScoreSystem : MonoBehaviour
 
     public void DisableBonus()
     {
+        Debug.Log("Bonus Disabled");
         currentBonus = 0;
         bonusCollider.enabled = false;
         bonusArea.SetActive(false);

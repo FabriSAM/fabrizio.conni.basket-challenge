@@ -2,13 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using TMPro;
 
 public class Timer : MonoBehaviour
 {
     [SerializeField] 
     private float timeLimit = 60f;
+    [SerializeField]
+    private string timerName;
+    [SerializeField]
+    private bool updateText = false;
+    [SerializeField]
+    private TMP_Text timerText;
+    
     private float timeRemaining;
     private bool timerIsRunning = false;
+    private UI_Timer uTimer;
+
 
     public float TimeRemaning { get { return timeRemaining; } }
 
@@ -16,12 +26,48 @@ public class Timer : MonoBehaviour
     public UnityAction OnTimerStart;
     public UnityAction<float> OnTimerUpdatePerc;
 
+    void Start()
+    {
+        uTimer = GameObject.Find(timerName).GetComponent<UI_Timer>();
+
+        if (updateText)
+        {
+            timerText = GameObject.Find("timer_text").GetComponent<TMP_Text>();
+        }
+       
+    }
+
     public void StartTimer()
     {
         timeRemaining = timeLimit;
         timerIsRunning = true;
     }
 
+    public void StopTimer()
+    {
+        timeRemaining = 0;
+        timerIsRunning = false;
+        updateTimerInternal();
+        OnTimerEnd?.Invoke();
+    }
+
+    public void UpdateTimerBar(float newTimePerc)
+    {
+        if (timerIsRunning) return;
+        uTimer.SetProgress(newTimePerc);
+    }
+
+    private void updateTimerInternal()
+    {
+        float timerperc = timeRemaining / timeLimit;
+        uTimer.SetProgress(timerperc);
+
+        if (updateText)
+            timerText.text = Mathf.CeilToInt(timeRemaining).ToString();
+
+        OnTimerUpdatePerc?.Invoke(timerperc);
+
+    }
     // Update is called once per frame
     void Update()
     {
@@ -30,8 +76,7 @@ public class Timer : MonoBehaviour
             if (timeRemaining > 0)
             {
                 timeRemaining -= Time.deltaTime;
-
-                OnTimerUpdatePerc?.Invoke(timeRemaining/timeLimit);
+                updateTimerInternal();
             }
             else
             {
