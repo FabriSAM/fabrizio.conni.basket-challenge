@@ -774,6 +774,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HoopCenter: {fileID: 9720980}
+  difficoulties:
+  - DifficoultyName: Easy
+    Difficoulty: {fileID: 11400000, guid: ef25e39e836fa8046b3f77072d4091f8, type: 2}
+  - DifficoultyName: Medium
+    Difficoulty: {fileID: 11400000, guid: f8481c08fb0a99c40b1fed35291df87b, type: 2}
+  - DifficoultyName: Hard
+    Difficoulty: {fileID: 11400000, guid: 0ddec47db0aff4146b46bf3250977405, type: 2}
 --- !u!54 &140311854
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1436,7 +1443,7 @@ GameObject:
   - component: {fileID: 582127358}
   m_Layer: 0
   m_Name: Sphere
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2812,7 +2819,7 @@ GameObject:
   - component: {fileID: 1897116604}
   m_Layer: 0
   m_Name: Sphere
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

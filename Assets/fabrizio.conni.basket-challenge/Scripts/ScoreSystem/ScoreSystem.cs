@@ -86,6 +86,7 @@ public class ScoreSystem : MonoBehaviour
         }
         else if ( other.gameObject.tag == "Enemy")
         {
+            Debug.Log($"Score: {aiScore}");
             aiScoreText.text = aiScore.ToString();
             onScoreChanged?.Invoke(1, aiScore, aiCurrentIncrementScore);
             ResetAiIncrementScore();

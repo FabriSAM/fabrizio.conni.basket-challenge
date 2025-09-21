@@ -1,8 +1,9 @@
-using UnityEngine;
 using FabrizioConni.BasketChallenge.Ball;
-using TMPro;
-using UnityEngine.SceneManagement;
+using System;
 using System.Collections;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameMngr : MonoBehaviour
 {
@@ -20,14 +21,28 @@ public class GameMngr : MonoBehaviour
     private ScoreSystem scoreSystem;
     private FailSystem[] failSystems;
     private FixedCamera mainCamera;
-       
+
+    private UI_MainMenu Ui_MainMenu;
+
     private FireballSystem fireballSystem;
     private int playerScore;
     private int failCount;
     private int totalShots;
 
+    private string diffcoulty;
+
     private float[] bonusTime = new float[2];
     private bool bonusActive;
+
+    private void Start()
+    {
+        Ui_MainMenu = FindObjectOfType<UI_MainMenu>();
+        print(Ui_MainMenu);
+        Ui_MainMenu.onDifficultyChange += OnDifficultyChange;
+
+        
+
+    }
 
     private void Awake()
     {
@@ -42,10 +57,9 @@ public class GameMngr : MonoBehaviour
             return;
         }
 
-        Init();
-}
+    }
 
-private void Init()
+    private void Init()
     {
         // Find references
         FindReferences();
@@ -57,19 +71,22 @@ private void Init()
         mainCamera.SetPlayer(ballController.gameObject);
         mainCamera.SetHoopPosition(ballController.HoopCenterLocation);
 
-        bonusTime[1] = Random.Range(5f, 60f);
+        bonusTime[1] = UnityEngine.Random.Range(5f, 60f);
         bonusTime[0] = bonusTime[1] - 10f;
 
         // Start Game
         gameTimer.StartTimer();
         scoreSystem.ResetScore();
-        
+
+        ballAIController.Init(diffcoulty);
+
     }
 
     private void FindReferences()
     {
         ballController = FindObjectOfType<BallController>();
         ballAIController = FindObjectOfType<AiController>();
+        
         scoreSystem = FindObjectOfType<ScoreSystem>();
         failSystems = FindObjectsOfType<FailSystem>();
         mainCamera = FindObjectOfType<FixedCamera>();
@@ -195,7 +212,7 @@ private void Init()
             scoreSystem.EnableBonus();            
         }
 
-        if(timeRaianing < bonusTime[0])
+        if(timeRaianing < bonusTime[0] && bonusActive)
         {
             scoreSystem.DisableBonus();
             bonusActive = false;
@@ -215,6 +232,8 @@ private void Init()
             case 0:
                 //Main Menu
                 DelegatesDesubscribiption();
+                Ui_MainMenu = FindObjectOfType<UI_MainMenu>();
+                Ui_MainMenu.onDifficultyChange += OnDifficultyChange;
                 break;
             case 1:
                 //Game Scene
@@ -231,5 +250,11 @@ private void Init()
         }
     }
 
+    private void OnDifficultyChange(string arg0)
+    {
+        Ui_MainMenu.onDifficultyChange -= OnDifficultyChange;
+        diffcoulty = arg0;
 
+        SceneManager.LoadScene(1);
+    }
 }
