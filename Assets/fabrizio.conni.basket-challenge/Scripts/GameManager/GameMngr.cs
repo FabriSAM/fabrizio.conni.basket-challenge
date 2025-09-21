@@ -37,11 +37,7 @@ public class GameMngr : MonoBehaviour
     private void Start()
     {
         Ui_MainMenu = FindObjectOfType<UI_MainMenu>();
-        print(Ui_MainMenu);
         Ui_MainMenu.onDifficultyChange += OnDifficultyChange;
-
-        
-
     }
 
     private void Awake()
@@ -56,7 +52,6 @@ public class GameMngr : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
     }
 
     private void Init()
@@ -79,7 +74,6 @@ public class GameMngr : MonoBehaviour
         scoreSystem.ResetScore();
 
         ballAIController.Init(diffcoulty);
-
     }
 
     private void FindReferences()
@@ -183,7 +177,6 @@ public class GameMngr : MonoBehaviour
             default:
                 return;
         }
-
     }
     #endregion
 
@@ -231,7 +224,7 @@ public class GameMngr : MonoBehaviour
         {
             case 0:
                 //Main Menu
-                DelegatesDesubscribiption();
+                //DelegatesDesubscribiption();
                 Ui_MainMenu = FindObjectOfType<UI_MainMenu>();
                 Ui_MainMenu.onDifficultyChange += OnDifficultyChange;
                 break;
