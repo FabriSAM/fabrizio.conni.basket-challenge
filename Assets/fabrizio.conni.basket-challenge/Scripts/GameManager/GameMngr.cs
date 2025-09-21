@@ -16,6 +16,7 @@ public class GameMngr : MonoBehaviour
 
 
     private BallController ballController;
+    private AiController ballAIController;
     private ScoreSystem scoreSystem;
     private FailSystem[] failSystems;
     private FixedCamera mainCamera;
@@ -68,6 +69,7 @@ private void Init()
     private void FindReferences()
     {
         ballController = FindObjectOfType<BallController>();
+        ballAIController = FindObjectOfType<AiController>();
         scoreSystem = FindObjectOfType<ScoreSystem>();
         failSystems = FindObjectsOfType<FailSystem>();
         mainCamera = FindObjectOfType<FixedCamera>();
@@ -121,12 +123,23 @@ private void Init()
     #endregion
 
     #region FailSystem Callbacks
-    private void OnFail()
+    private void OnFail(int index)
     {
-        failCount++;
-        fireballSystem.ResetFireballPoints();
-        scoreSystem.FireballBonus = fireballSystem.IsFireballActive;
-        ResetBall();
+        switch (index)
+        {
+            case 0:
+                failCount++;
+                fireballSystem.ResetFireballPoints();
+                scoreSystem.FireballBonus = fireballSystem.IsFireballActive;
+                PlayerBallReset();
+                break;
+            case 1:
+                ballAIController.ResetBall();
+                break;
+            default:
+                break;
+        }
+
     }
     #endregion
 
@@ -138,16 +151,27 @@ private void Init()
     #endregion
 
     #region Score Callbacks
-    private void OnScoreChanged(int score, int delta)
-    {
-        ResetBall();
-        playerScore = score;
-        fireballSystem.AddFireballPoint(delta);
+    private void OnScoreChanged(int index, int score, int delta)
+    { 
+        switch (index)
+        {
+            case 0:
+                PlayerBallReset();
+                playerScore = score;
+                fireballSystem.AddFireballPoint(delta);
+                break;
+            case 1:
+                ballAIController.ResetBall();
+                return;
+            default:
+                return;
+        }
+
     }
     #endregion
 
     #region BallController
-    private void ResetBall()
+    private void PlayerBallReset()
     {
         totalShots++;
         

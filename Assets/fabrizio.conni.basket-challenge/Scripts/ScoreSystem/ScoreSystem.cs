@@ -15,17 +15,38 @@ public class ScoreSystem : MonoBehaviour
     [SerializeField]
     private TMP_Text bonusText;
 
+
     private TMP_Text playerScoreText;
+    private TMP_Text aiScoreText;
 
     private int score;
     private int currentIncrementScore;
     private int currentBonus;
+
+    private int aiScore;
+    private int aiCurrentIncrementScore;
+
     private int[] bonusValues = new int[] { 4, 6, 8 };
     public bool FireballBonus { get; set; }
 
-    public UnityAction<int, int> onScoreChanged;
+    public UnityAction<int, int, int> onScoreChanged;
 
     private void OnTriggerEnter(Collider other)
+    {
+        switch (other.gameObject.tag)
+        {
+            case "Player":
+                AddScore();
+                break;
+            case "Enemy":
+                AddAiScore();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void AddScore()
     {
         if (currentIncrementScore == 0)
         {
@@ -39,24 +60,51 @@ public class ScoreSystem : MonoBehaviour
         score += currentIncrementScore;
     }
 
+    private void AddAiScore()
+    {
+        if (aiCurrentIncrementScore == 0)
+        {
+            aiCurrentIncrementScore = 3;
+        }
+        aiScore += aiCurrentIncrementScore;
+    }
     private void Start()
     {
         playerScoreText = GameObject.Find("score_text").GetComponent<TMP_Text>();
+        aiScoreText = GameObject.Find("ai_score_text").GetComponent<TMP_Text>();
         playerScoreText.text = "0";
     }
 
     private void OnTriggerExit(Collider other)
     {
         Debug.Log($"Score: {score}, Increment: {currentIncrementScore}, currentBonus: {currentBonus}, FireballBonus: {FireballBonus}");
-        playerScoreText.text = score.ToString();        
-        onScoreChanged?.Invoke(score, currentIncrementScore);
-        ResetIncrementScore();
+        if ( other.gameObject.tag == "Player")
+        {
+            playerScoreText.text = score.ToString();
+            onScoreChanged?.Invoke(0, score, currentIncrementScore);
+            ResetPlayerIncrementScore();
+        }
+        else if ( other.gameObject.tag == "Enemy")
+        {
+            aiScoreText.text = aiScore.ToString();
+            onScoreChanged?.Invoke(1, aiScore, aiCurrentIncrementScore);
+            ResetAiIncrementScore();
+        }
     }
 
     private void OnCollisionEnter(Collision other)
     {
-        Debug.Log("Collision with: " + other.gameObject.name);
-        currentIncrementScore = 2 + currentBonus;
+        switch (other.gameObject.tag)
+        {
+            case "Player":
+                currentIncrementScore = 2 + currentBonus;
+                break;
+            case "Enemy":
+                aiCurrentIncrementScore = 2;
+                break;
+            default:
+                break;
+        }        
     }
 
     private void Awake()
@@ -64,21 +112,38 @@ public class ScoreSystem : MonoBehaviour
         hoopSystem.hitHoop += OnHitHoop;
     }
 
-    private void OnHitHoop()
+    private void OnHitHoop(int index)
     {
-        if (currentIncrementScore != 0) return;
-        
-        currentIncrementScore = 2;
+        switch (index)
+        {
+            case 0:
+                if (currentIncrementScore != 0) return;
+
+                currentIncrementScore = 2;
+                break;
+            case 1:
+                if (aiCurrentIncrementScore != 0) return;
+
+                aiCurrentIncrementScore = 2;
+                break;
+            default:
+                break;
+        }
     }
 
     public void ResetScore()
     {
         score = 0;
+        aiScore = 0;
     }
     
-    public void ResetIncrementScore()
+    public void ResetPlayerIncrementScore()
     { 
         currentIncrementScore = 0;
+    }
+    public void ResetAiIncrementScore()
+    {
+        aiCurrentIncrementScore = 0;
     }
 
     public void EnableBonus()

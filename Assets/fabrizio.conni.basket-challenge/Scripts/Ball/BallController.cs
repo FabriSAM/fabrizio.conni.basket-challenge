@@ -11,10 +11,14 @@ namespace FabrizioConni.BasketChallenge.Ball
         #region Serialized Fields
         [SerializeField] 
         private float power;
-        [SerializeField] private LineRenderer trajectoryLine;
-        [SerializeField] private int lineSegmentCount = 30;
-        [SerializeField] private float timeStep = 0.1f;
-        [SerializeField] private LayerMask collisionMask;
+        [SerializeField] 
+        private LineRenderer trajectoryLine;
+        [SerializeField] 
+        private int lineSegmentCount = 30;
+        [SerializeField] 
+        private float timeStep = 0.1f;
+        [SerializeField] 
+        private LayerMask collisionMask;
 
         [SerializeField]
         private GameObject HoopCenter;
