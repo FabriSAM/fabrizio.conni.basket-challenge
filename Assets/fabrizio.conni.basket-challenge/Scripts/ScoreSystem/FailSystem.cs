@@ -5,9 +5,13 @@ using UnityEngine.Events;
 
 public class FailSystem : MonoBehaviour
 {
-    public UnityAction onFail;
+    public UnityAction<int> onFail;
     private void OnCollisionEnter(Collision collision)
     {
-        onFail?.Invoke();
+        if (collision.gameObject.CompareTag("Player"))
+            onFail?.Invoke(0);
+
+        else
+            onFail?.Invoke(1);
     }
 }
