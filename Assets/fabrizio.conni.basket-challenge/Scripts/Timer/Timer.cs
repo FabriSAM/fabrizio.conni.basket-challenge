@@ -14,7 +14,9 @@ public class Timer : MonoBehaviour
     private bool updateText = false;
     [SerializeField]
     private TMP_Text timerText;
-    
+    [SerializeField]
+    private UI_TimeLeft uiTimeLeft;
+
     private float timeRemaining;
     private bool timerIsRunning = false;
     private UI_Timer uTimer;
@@ -28,6 +30,8 @@ public class Timer : MonoBehaviour
 
     void Start()
     {
+        if (timerName == "") return;
+
         uTimer = GameObject.Find(timerName).GetComponent<UI_Timer>();
 
         if (updateText)
@@ -60,10 +64,14 @@ public class Timer : MonoBehaviour
     private void updateTimerInternal()
     {
         float timerperc = timeRemaining / timeLimit;
-        uTimer.SetProgress(timerperc);
+        if (uTimer)
+            uTimer.SetProgress(timerperc);
 
         if (updateText)
             timerText.text = Mathf.CeilToInt(timeRemaining).ToString();
+
+        if(uiTimeLeft != null)
+            uiTimeLeft.UpdateTimeLeft(timeRemaining);
 
         OnTimerUpdatePerc?.Invoke(timerperc);
 

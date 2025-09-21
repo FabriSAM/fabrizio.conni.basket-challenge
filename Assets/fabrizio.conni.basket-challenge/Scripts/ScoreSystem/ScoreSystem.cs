@@ -15,15 +15,16 @@ public class ScoreSystem : MonoBehaviour
     [SerializeField]
     private TMP_Text bonusText;
 
-
-    private TMP_Text playerScoreText;
-    private TMP_Text aiScoreText;
+    [SerializeField]
+    private UI_Score playerScore;
+    [SerializeField]
+    private UI_Score aiScore;
 
     private int score;
     private int currentIncrementScore;
     private int currentBonus;
 
-    private int aiScore;
+    private int aiTotalScore;
     private int aiCurrentIncrementScore;
 
     private int[] bonusValues = new int[] { 4, 6, 8 };
@@ -66,13 +67,10 @@ public class ScoreSystem : MonoBehaviour
         {
             aiCurrentIncrementScore = 3;
         }
-        aiScore += aiCurrentIncrementScore;
+        aiTotalScore += aiCurrentIncrementScore;
     }
     private void Start()
     {
-        playerScoreText = GameObject.Find("score_text").GetComponent<TMP_Text>();
-        aiScoreText = GameObject.Find("ai_score_text").GetComponent<TMP_Text>();
-        playerScoreText.text = "0";
     }
 
     private void OnTriggerExit(Collider other)
@@ -80,15 +78,14 @@ public class ScoreSystem : MonoBehaviour
         Debug.Log($"Score: {score}, Increment: {currentIncrementScore}, currentBonus: {currentBonus}, FireballBonus: {FireballBonus}");
         if ( other.gameObject.tag == "Player")
         {
-            playerScoreText.text = score.ToString();
+            playerScore.UpdateScore(score);
             onScoreChanged?.Invoke(0, score, currentIncrementScore);
             ResetPlayerIncrementScore();
         }
         else if ( other.gameObject.tag == "Enemy")
         {
-            Debug.Log($"Score: {aiScore}");
-            aiScoreText.text = aiScore.ToString();
-            onScoreChanged?.Invoke(1, aiScore, aiCurrentIncrementScore);
+            aiScore.UpdateScore(aiTotalScore);
+            onScoreChanged?.Invoke(1, aiTotalScore, aiCurrentIncrementScore);
             ResetAiIncrementScore();
         }
     }
@@ -135,7 +132,7 @@ public class ScoreSystem : MonoBehaviour
     public void ResetScore()
     {
         score = 0;
-        aiScore = 0;
+        aiTotalScore = 0;
     }
     
     public void ResetPlayerIncrementScore()

@@ -36,6 +36,8 @@ public class GameMngr : MonoBehaviour
 
     private void Start()
     {
+        Scene curerntscene = SceneManager.GetActiveScene();
+        if ( curerntscene.buildIndex != 0 ) return;
         Ui_MainMenu = FindObjectOfType<UI_MainMenu>();
         Ui_MainMenu.onDifficultyChange += OnDifficultyChange;
     }
@@ -84,7 +86,7 @@ public class GameMngr : MonoBehaviour
         scoreSystem = FindObjectOfType<ScoreSystem>();
         failSystems = FindObjectsOfType<FailSystem>();
         mainCamera = FindObjectOfType<FixedCamera>();
-        gameTimer = GameObject.Find("MatchTimer").GetComponent<Timer>();
+        gameTimer = GameObject.Find("Timer").GetComponent<Timer>();
 
         fireballSystem = FindObjectOfType<FireballSystem>();
     }
