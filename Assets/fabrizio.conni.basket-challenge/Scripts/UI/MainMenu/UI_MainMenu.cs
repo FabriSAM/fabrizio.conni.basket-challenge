@@ -20,6 +20,15 @@ public class UI_MainMenu : MonoBehaviour
         mainMenu = root.Q<VisualElement>("main-menu");
         difficultyMenu = root.Q<VisualElement>("difficulty-menu");
 
+        var allButtons = root.Query<Button>().ToList();
+
+        foreach (var button in allButtons)
+        {
+            button.RegisterCallback<PointerEnterEvent>(evt =>
+            {
+                AudioMngr.Instance.Play("ButtonHover");
+            });
+        }
         // Bottoni principali
         root.Q<Button>("play-button").clicked += ShowDifficultyMenu;
         root.Q<Button>("exit-button").clicked += () => Application.Quit();
@@ -45,17 +54,17 @@ public class UI_MainMenu : MonoBehaviour
 
     private void SelectDifficulty(string difficulty)
     {
-        Debug.Log("Hai scelto difficoltà: " + difficulty);
-        Debug.Log("onDifficultyChange è null? " + (onDifficultyChange == null));
         onDifficultyChange?.Invoke(difficulty);
     }
 
     private void OnEnable()
     {
         Label titleLabel = uiDocument.rootVisualElement.Q<Label>("title");
+        Label challenge = uiDocument.rootVisualElement.Q<Label>("challenge");
 
         if (Screen.width <= 720)
         {
+            challenge.style.fontSize = 20;
             titleLabel.style.fontSize = 20;
             List<Button> buttons = uiDocument.rootVisualElement.Query<Button>().ToList();
             foreach (var button in buttons) button.style.fontSize = 10;
@@ -63,6 +72,7 @@ public class UI_MainMenu : MonoBehaviour
         else
         {
             titleLabel.style.fontSize = 48;
+            challenge.style.fontSize = 48;
             List<Button> buttons = uiDocument.rootVisualElement.Query<Button>().ToList();
             foreach (var button in buttons) button.style.fontSize = 20;
         }

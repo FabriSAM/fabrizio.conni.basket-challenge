@@ -26,6 +26,7 @@ public class ScoreSystem : MonoBehaviour
 
     private int aiTotalScore;
     private int aiCurrentIncrementScore;
+    private int lastSoundIndex;
 
     private int[] bonusValues = new int[] { 4, 6, 8 };
     public bool FireballBonus { get; set; }
@@ -67,7 +68,7 @@ public class ScoreSystem : MonoBehaviour
         if (aiCurrentIncrementScore == 0)
         {
             aiCurrentIncrementScore = 3;
-            AudioMngr.Instance.Play("Basketball_05");
+            AudioMngr.Instance.Play("Basketball_06");
         }
         aiTotalScore += aiCurrentIncrementScore;
     }
@@ -77,7 +78,6 @@ public class ScoreSystem : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        Debug.Log($"Score: {score}, Increment: {currentIncrementScore}, currentBonus: {currentBonus}, FireballBonus: {FireballBonus}");
         if ( other.gameObject.tag == "Player")
         {
             playerScore.UpdateScore(score);
@@ -129,7 +129,12 @@ public class ScoreSystem : MonoBehaviour
             default:
                 break;
         }
-        AudioMngr.Instance.Play("Basketball_01");
+        int randomSound = Random.Range(1, 5);
+        while (randomSound == lastSoundIndex)
+        {
+            randomSound = Random.Range(1, 5);
+        }
+        AudioMngr.Instance.Play("Basketball_0" + randomSound);
     }
 
     public void ResetScore()

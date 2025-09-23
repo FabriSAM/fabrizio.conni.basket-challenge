@@ -7,10 +7,8 @@
         <ui:Button name="settings-button" text="Impostazioni" />
         <ui:Button name="exit-button" text="Esci" />
     </ui:VisualElement>
-
-    <!-- Sottomenu difficoltà -->
     <ui:VisualElement name="difficulty-menu" class="menu-container" style="display: none;">
-        <ui:Label text="Seleziona Difficoltà" class="title" />
+        <ui:Label text="Seleziona Difficoltà" name="challenge" class="title" />
         <ui:Button name="easy-button" text="Facile" />
         <ui:Button name="medium-button" text="Medio" />
         <ui:Button name="hard-button" text="Difficile" />
