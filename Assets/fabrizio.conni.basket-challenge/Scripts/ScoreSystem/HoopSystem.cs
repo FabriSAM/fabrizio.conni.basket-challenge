@@ -22,6 +22,7 @@ public class HoopSystem : MonoBehaviour
             default:
                 break;
         }
+        
 
         hitHoop?.Invoke(index);
     }

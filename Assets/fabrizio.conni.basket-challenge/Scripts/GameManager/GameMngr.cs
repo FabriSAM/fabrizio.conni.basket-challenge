@@ -76,6 +76,8 @@ public class GameMngr : MonoBehaviour
         scoreSystem.ResetScore();
 
         ballAIController.Init(diffcoulty);
+
+        AudioMngr.Instance.Play("BackgroundMusic");
     }
 
     private void FindReferences()

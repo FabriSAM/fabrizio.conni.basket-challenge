@@ -52,6 +52,7 @@ public class ScoreSystem : MonoBehaviour
         if (currentIncrementScore == 0)
         {
             currentIncrementScore = 3;
+            AudioMngr.Instance.Play("Basketball_05");
         }
 
         if (FireballBonus)
@@ -66,6 +67,7 @@ public class ScoreSystem : MonoBehaviour
         if (aiCurrentIncrementScore == 0)
         {
             aiCurrentIncrementScore = 3;
+            AudioMngr.Instance.Play("Basketball_05");
         }
         aiTotalScore += aiCurrentIncrementScore;
     }
@@ -127,6 +129,7 @@ public class ScoreSystem : MonoBehaviour
             default:
                 break;
         }
+        AudioMngr.Instance.Play("Basketball_01");
     }
 
     public void ResetScore()
