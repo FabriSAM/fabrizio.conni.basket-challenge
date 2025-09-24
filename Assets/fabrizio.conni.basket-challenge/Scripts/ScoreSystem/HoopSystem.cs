@@ -1,29 +1,34 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class HoopSystem : MonoBehaviour
+namespace FabrizioConni.BasketChallenge.Score
 {
-    public UnityAction<int> hitHoop;
-
-    private void OnCollisionEnter(Collision collision)
+    /// <summary>
+    /// The HoopSystem class detects when a ball successfully passes through the hoop.
+    /// It differentiates between player and enemy scores based on the colliding object's tag
+    /// and invokes an event to notify other components of the score.
+    /// </summary>
+    public class HoopSystem : MonoBehaviour
     {
-        int index = -1;
+        public UnityAction<int> hitHoop;
 
-        switch (collision.gameObject.tag)
+        private void OnCollisionEnter(Collision collision)
         {
-            case "Player":
-                index = 0;
-                break;
-            case "Enemy":
-                index = 1;
-                break;
-            default:
-                break;
-        }
-        
+            int index = -1;
 
-        hitHoop?.Invoke(index);
+            switch (collision.gameObject.tag)
+            {
+                case "Player":
+                    index = 0;
+                    break;
+                case "Enemy":
+                    index = 1;
+                    break;
+                default:
+                    break;
+            }
+            hitHoop?.Invoke(index);
+        }
     }
 }
+

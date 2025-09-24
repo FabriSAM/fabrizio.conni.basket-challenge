@@ -3,12 +3,10 @@
     <ui:VisualElement name="main-menu" class="menu-container">
         <ui:Label name="title" text="Basket Challenge" class="title" style="width: auto; font-size: 40%;" />
         <ui:Button name="play-button" text="Gioca" />
-        <ui:Button name="career-button" text="Modalità Carriera" />
-        <ui:Button name="settings-button" text="Impostazioni" />
         <ui:Button name="exit-button" text="Esci" />
     </ui:VisualElement>
     <ui:VisualElement name="difficulty-menu" class="menu-container" style="display: none;">
-        <ui:Label text="Seleziona Difficoltà" name="challenge" class="title" />
+        <ui:Label text="Seleziona Difficoltà" name="challenge" class="title" style="-unity-text-align: upper-center;" />
         <ui:Button name="easy-button" text="Facile" />
         <ui:Button name="medium-button" text="Medio" />
         <ui:Button name="hard-button" text="Difficile" />

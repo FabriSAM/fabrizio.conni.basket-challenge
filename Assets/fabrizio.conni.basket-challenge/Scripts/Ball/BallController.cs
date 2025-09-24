@@ -1,51 +1,74 @@
 using FabrizioConni.BasketChallenge.Utility;
-
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace FabrizioConni.BasketChallenge.Ball
 {
+    // Struct containing all parameters for the ball shot, allowing easy tuning from the Inspector
+    [Serializable]
+    public struct BallShotParams
+    {
+        public float horizSensitivity; // Sensitivity for horizontal drag
+        public float vertSensitivity;  // Sensitivity for vertical drag
+        public float baseForward;      // Base forward force
+        public float forwardBoost;     // Additional forward force based on drag
+        public float upPower;          // Upward force multiplier
+        public float lateralPower;     // Lateral force multiplier
+        public float deadzone;         // Minimum drag threshold to register input
+    }
+
+    // Main controller for the basketball, handles input, shooting, and trajectory visualization
     [RequireComponent(typeof(Rigidbody))]
     public class BallController : MonoBehaviour
     {
         #region Serialized Fields
-        [SerializeField] 
-        private float power;
-        [SerializeField] 
-        private LineRenderer trajectoryLine;
-        [SerializeField] 
-        private int lineSegmentCount = 30;
-        [SerializeField] 
-        private float timeStep = 0.1f;
-        [SerializeField] 
-        private LayerMask collisionMask;
-
         [SerializeField]
-        private GameObject HoopCenter;
+        private float power; // Not used directly, but can be used for global power scaling
+        [SerializeField]
+        private LineRenderer trajectoryLine; // LineRenderer to show the predicted trajectory
+        [SerializeField]
+        private int lineSegmentCount = 25; // Number of segments for the trajectory line
+        [SerializeField]
+        private float timeStep = 0.1f; // Time step between trajectory points
+        [SerializeField]
+        private GameObject HoopCenter; // Reference to the hoop's center for aiming
+        [SerializeField]
+        private BallShotParams shotParams; // Parameters for the shot, editable in Inspector
+        [SerializeField]
+        private LayerMask collisionMask; // Mask for collision detection in trajectory
         #endregion
 
         #region Private Fields
-        private Rigidbody rb;
-        private Vector2 mouseStartPosition;
-        private bool dragging;
-        private bool shot;
-        private bool isCancelled;
-        private Transform aimOrigin;
-        private UI_Timer uPower;
+        private Rigidbody rb; // Cached Rigidbody reference
+        private Vector2 mouseStartPosition; // Mouse position at drag start
+        private bool dragging; // Is the player currently dragging to aim?
+        private bool shot; // Has the ball been shot?
+        private bool isCancelled; // Has the shot been cancelled?
+        private Transform aimOrigin; // Origin for calculating shot direction
+        private UI_Timer uPower; // UI element to show shot power
+        #endregion
 
+        #region Properties
+        // Returns the world position of the hoop center
         public Vector3 HoopCenterLocation { get { return HoopCenter.transform.position; } }
         #endregion
 
+        #region Actions
+        // Event invoked when the ball reset is complete
         public UnityAction<Transform> onResetComplete;
+        #endregion
 
-      
         #region Monobehaviour Callbacks
         private void Start()
         {
+            // Find and cache the UI element for shot power
             uPower = GameObject.Find("ShootPower").GetComponent<UI_Timer>();
-        }   
+        }
+
         private void Awake()
         {
+            // Cache Rigidbody and subscribe to input events
             rb = GetComponent<Rigidbody>();
             InputManager.Computer.Shoot.started += ShootStartCallback;
             InputManager.Computer.Shoot.canceled += ShootCanceledCallback;
@@ -53,106 +76,76 @@ namespace FabrizioConni.BasketChallenge.Ball
 
         private void OnDestroy()
         {
+            // Unsubscribe from input events to avoid memory leaks
             InputManager.Computer.Shoot.started -= ShootStartCallback;
             InputManager.Computer.Shoot.canceled -= ShootCanceledCallback;
         }
 
-        private void ShootCanceledCallback(UnityEngine.InputSystem.InputAction.CallbackContext context)
-        {
-            if (shot) return;
-            if (isCancelled) return;
-            dragging = false;
-            Shoot();
-            isCancelled = true;
-        }
-
-        private void ShootStartCallback(UnityEngine.InputSystem.InputAction.CallbackContext context)
-        {            
-            if (shot) return;
-            mouseStartPosition = InputManager.MousePosition;
-            aimOrigin = transform;
-            dragging = true;
-            isCancelled = false;
-        }
-
-        // Update is called once per frame
         void Update()
         {
+            // If not dragging, do nothing
             if (!dragging) return;
             Vector3 force = Vector3.zero;
+            // Calculate the force based on current drag
             ShootTrajectory(ref force);
+            // Show the predicted trajectory
             ShowTrajectory(transform.position, force);
         }
         #endregion
 
+        #region Private Methods
+        // Calculates the force vector for the shot based on mouse drag
         private void ShootTrajectory(ref Vector3 force)
-        {            
-            // Drag
+        {
+            // Get current mouse position and calculate drag delta
             Vector2 end = InputManager.MousePosition;
             Vector2 delta = end - mouseStartPosition;
 
-            // Normalizza il drag rispetto alla risoluzione (coerente su PC e mobile)
+            // Normalize drag to screen size for consistency across devices
             Vector2 nd = new Vector2(
                 delta.x / Screen.width,
                 delta.y / Screen.height
             );
 
-            // Parametri di sensibilità (tuning in Inspector)
-            float horizSensitivity = 0.5f;   // quanto la palla devia lateralmente
-            float vertSensitivity = 1.5f;   // quanto cresce la potenza/arco
-            float baseForward = 1.5f;   // spinta minima in avanti
-            float forwardBoost = 1;  // spinta extra in avanti legata alla potenza
-            float upPower = 10;  // spinta verso l’alto legata alla potenza
-            float lateralPower = 2f;   // forza laterale massima
-            float deadzone = 0.005f; // ignora tocchi/piccoli movimenti
+            // Extract horizontal and vertical components, apply sensitivity and clamp
+            float horiz = Mathf.Clamp(nd.x * shotParams.horizSensitivity, -1f, 1f);
+            float vert = Mathf.Clamp(nd.y * shotParams.vertSensitivity, 0f, 1); // Only positive vertical increases power
 
-
-
-            //// Parametri di sensibilità (tuning in Inspector)
-            //float horizSensitivity = 0.5f;   // quanto la palla devia lateralmente
-            //float vertSensitivity = 2;   // quanto cresce la potenza/arco
-            //float baseForward = 1;   // spinta minima in avanti
-            //float forwardBoost = 1;  // spinta extra in avanti legata alla potenza
-            //float upPower = 5;  // spinta verso l’alto legata alla potenza
-            //float lateralPower = 2f;   // forza laterale massima
-            //float deadzone = 0.005f; // ignora tocchi/piccoli movimenti
-
-            // Estrai componenti intenzionali
-            float horiz = Mathf.Clamp(nd.x * horizSensitivity, -1f, 1f);
-            float vert = Mathf.Clamp(nd.y * vertSensitivity, 0f, 1); // solo su aumenta potenza
-
+            // Update UI with current power
             uPower.SetProgress(vert);
 
-            // Applica deadzone
-            if (Mathf.Abs(nd.x) < deadzone) horiz = 0f;
-            if (Mathf.Abs(nd.y) < deadzone) vert = 0f;
+            // Apply deadzone to avoid accidental small drags
+            if (Mathf.Abs(nd.x) < shotParams.deadzone) horiz = 0f;
+            if (Mathf.Abs(nd.y) < shotParams.deadzone) vert = 0f;
 
-            // Costruisci la forza nei 3 assi locali
-            Vector3 fForward = aimOrigin.forward * (baseForward + vert * forwardBoost);
-            Vector3 fUp = aimOrigin.up * (vert * upPower);
-            Vector3 fRight = aimOrigin.right * (horiz * lateralPower);
+            // Build force vector in local space
+            Vector3 fForward = aimOrigin.forward * (shotParams.baseForward + vert * shotParams.forwardBoost);
+            Vector3 fUp = aimOrigin.up * (vert * shotParams.upPower);
+            Vector3 fRight = aimOrigin.right * (horiz * shotParams.lateralPower);
 
-            // Forza finale
+            // Combine all components for the final force
             force = fForward + fUp + fRight;
-
         }
 
+        // Applies the calculated force to the ball to shoot it
         private void Shoot()
         {
-            // Forza finale
             Vector3 force = Vector3.zero;
             ShootTrajectory(ref force);
 
-            // Spara
+            // Enable physics and reset velocities
             rb.isKinematic = false;
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
+            // Apply the force as an instant velocity change
             rb.AddForce(force, ForceMode.VelocityChange);
 
             shot = true;
-
         }
+        #endregion
 
+        #region Public Methods
+        // Draws the predicted trajectory using physics simulation
         public void ShowTrajectory(Vector3 startPos, Vector3 initialVelocity)
         {
             Vector3[] points = new Vector3[lineSegmentCount];
@@ -161,9 +154,10 @@ namespace FabrizioConni.BasketChallenge.Ball
             for (int i = 1; i < lineSegmentCount; i++)
             {
                 float t = i * timeStep;
+                // Calculate next point using kinematic equation
                 Vector3 point = startPos + initialVelocity * t + 0.5f * Physics.gravity * t * t;
 
-                // Optional: stop if hits something
+                // If the trajectory hits something, stop and set the last point at the hit
                 if (Physics.Raycast(points[i - 1], point - points[i - 1], out RaycastHit hit, (point - points[i - 1]).magnitude, collisionMask))
                 {
                     points[i] = hit.point;
@@ -175,25 +169,53 @@ namespace FabrizioConni.BasketChallenge.Ball
                 points[i] = point;
             }
 
+            // Set all points if no collision
             trajectoryLine.positionCount = lineSegmentCount;
             trajectoryLine.SetPositions(points);
         }
 
+        // Resets the ball to a new position and state for the next shot
         public void ResetBall()
         {
             rb.isKinematic = true;
             rb.velocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
-            
-            transform.position = SpawnerFactory.GetPosition(HoopCenter.transform.position, Random.Range(1.2f, 1.5f));
+
+            // Get a new spawn position near the hoop
+            transform.position = SpawnerFactory.GetPosition(HoopCenter.transform.position, UnityEngine.Random.Range(1.2f, 1.5f));
+            // Orient the ball to face the hoop
             Vector3 direction = HoopCenter.transform.position - transform.position;
             Quaternion rotation = Quaternion.LookRotation(direction);
             transform.rotation = rotation;
             shot = false;
             dragging = false;
             trajectoryLine.positionCount = 0;
+            // Notify listeners that the reset is complete
             onResetComplete?.Invoke(transform);
         }
+        #endregion
+
+        #region Callbacks
+        // Called when the shoot input is released/canceled
+        private void ShootCanceledCallback(UnityEngine.InputSystem.InputAction.CallbackContext context)
+        {
+            if (shot) return;
+            if (isCancelled) return;
+            dragging = false;
+            Shoot();
+            isCancelled = true;
+        }
+
+        // Called when the shoot input is started/pressed
+        private void ShootStartCallback(UnityEngine.InputSystem.InputAction.CallbackContext context)
+        {
+            if (shot) return;
+            mouseStartPosition = InputManager.MousePosition;
+            aimOrigin = transform;
+            dragging = true;
+            isCancelled = false;
+        }
+        #endregion
     }
 }
 
