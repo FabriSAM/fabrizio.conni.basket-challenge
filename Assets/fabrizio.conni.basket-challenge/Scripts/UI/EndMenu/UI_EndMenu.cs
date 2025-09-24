@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
+using FabrizioConni.BasketChallenge.Audio;
 
 public class UI_EndMenu : MonoBehaviour
 {
@@ -23,6 +24,15 @@ public class UI_EndMenu : MonoBehaviour
 
         root.Q<Button>("retry-button").clicked += () => SceneManager.LoadScene("GameScene");
         root.Q<Button>("main-menu-button").clicked += () => SceneManager.LoadScene("MainMenu");
+
+        var allButtons = root.Query<Button>().ToList();
+        foreach (var button in allButtons)
+        {
+            button.RegisterCallback<PointerEnterEvent>(evt =>
+            {
+                AudioMngr.Instance.Play("HoverButton");
+            });
+        }
     }
 
     public void SetStats(int totalShots, int missedShots, int score)

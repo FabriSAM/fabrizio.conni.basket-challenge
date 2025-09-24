@@ -4,7 +4,6 @@ using UnityEngine;
 
 public interface I_Sound
 {
-    public void Play(string name);
-    public void Stop(string name);
-    public void SetVolume(AudioSource source, string name, float volume);
+    abstract public void Play(string name);
+    abstract public void SetVolume(AudioSource source, float volume);
 }

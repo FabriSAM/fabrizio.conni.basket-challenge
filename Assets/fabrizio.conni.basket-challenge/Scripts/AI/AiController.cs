@@ -5,16 +5,6 @@ using UnityEngine;
 namespace FabrizioConni.BasketChallenge.AI
 {
     #region Structs
-    // Struct representing the AI difficulty parameters
-    [Serializable]
-    public struct AiDifficoulty
-    {
-        [Range(0f, 1f)]
-        public float accuracy; // 0 = low accuracy, 1 = high accuracy
-        [Range(0f, 5f)]
-        public float arcHeight; // additional height to the arc
-    }
-
     // Struct representing a named shooting ability with its difficulty settings
     [Serializable]
     public struct ShootAbility

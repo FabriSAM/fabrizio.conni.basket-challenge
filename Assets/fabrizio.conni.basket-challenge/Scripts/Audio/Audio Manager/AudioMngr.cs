@@ -2,14 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 namespace FabrizioConni.BasketChallenge.Audio
 {
-    [System.Serializable]
-    public class Sound
-    {
-        public string Name;
-        public AudioClip Clip;
-    }
+
 
     // Audio manager class implementing the I_Sound interface
     [RequireComponent(typeof(AudioSource))]
@@ -24,11 +20,34 @@ namespace FabrizioConni.BasketChallenge.Audio
         private List<Sound> sounds;
         #endregion
 
+        [System.Serializable]
+        public class Sound
+        {
+            public string Name;
+            public AudioClip Clip;
+        }
+
+        #region Private Fields
+        private Dictionary<string, AudioClip> soundDictionary;
+        #endregion
+
         #region Properties
         public static AudioMngr Instance;
         #endregion
 
         #region Monobehaviour Callbacks
+        private void Start()
+        {
+            soundDictionary = new Dictionary<string, AudioClip>();
+            foreach (var sound in sounds)
+            {
+                if (!soundDictionary.ContainsKey(sound.Name))
+                {
+                    soundDictionary.Add(sound.Name, sound.Clip);
+                }
+            }
+        }
+        
         void Awake()
         {
             if (Instance == null) Instance = this;
@@ -41,17 +60,13 @@ namespace FabrizioConni.BasketChallenge.Audio
         #region Public Methods
         public void Play(string name)
         {
-            Sound s = sounds.Find(sound => sound.Name == name);
-            if (s.Clip == null)
+            if (!soundDictionary.ContainsKey(name))
             {
-                Debug.LogWarning("Clip non assegnato per il suono: " + s.Name);
+                Debug.Log("Error Playing sound: " + name);
+                return;
             }
-            if (s != null)
-            {
-                sfx.PlayOneShot(s.Clip);
-
-                Debug.Log("Playing sound: " + name);
-            }
+            Debug.Log("Playing sound: " + name);
+            sfx.PlayOneShot(soundDictionary[name]);
         }
 
         public void PlayBackground()
@@ -59,25 +74,14 @@ namespace FabrizioConni.BasketChallenge.Audio
             source.Play();
         }
 
-        public void Stop(string name)
-        {
-            Sound s = sounds.Find(sound => sound.Name == name);
-            if (s != null) sfx.Stop();
-        }
-
         public void StopWithFade(string name, float fadeDuration)
         {
-            Sound s = sounds.Find(sound => sound.Name == name);
-            if (s != null)
-            {
-                StartCoroutine(FadeOut(source, fadeDuration));
-            }
+            StartCoroutine(FadeOut(source, fadeDuration));
         }
 
-        public void SetVolume(AudioSource source, string name, float volume)
+        public void SetVolume(AudioSource source, float volume)
         {
-            Sound s = sounds.Find(sound => sound.Name == name);
-            if (s != null) source.volume = volume;
+            source.volume = volume;
         }
         #endregion
 
@@ -86,7 +90,7 @@ namespace FabrizioConni.BasketChallenge.Audio
         {
             float startVolume = audioSource.volume;
             float time = 0f;
-
+            
             while (time < fadeDuration)
             {
                 time += Time.deltaTime;

@@ -26,7 +26,7 @@ public class UI_MainMenu : MonoBehaviour
         {
             button.RegisterCallback<PointerEnterEvent>(evt =>
             {
-                AudioMngr.Instance.Play("ButtonHover");
+                AudioMngr.Instance.Play("HoverButton");
             });
         }
         // Bottoni principali

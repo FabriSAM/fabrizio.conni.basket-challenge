@@ -229,7 +229,6 @@ namespace FabrizioConni.BasketChallenge.Score
         /// </summary>
         public void DisableBonus()
         {
-            Debug.Log("Bonus Disabled");
             currentBonus = 0;
             bonusCollider.enabled = false;
             bonusArea.SetActive(false);
