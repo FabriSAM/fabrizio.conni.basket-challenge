@@ -10,6 +10,9 @@ public class GameMngr : MonoBehaviour
     [SerializeField, Tooltip("Delta from start to end bounus time (in Seconds)")]
     private int deltaBounsTime = 10;
 
+    [SerializeField]
+    private int fadeOutDuration = 2;
+
 
     private Timer gameTimer;
 
@@ -34,10 +37,12 @@ public class GameMngr : MonoBehaviour
     private float[] bonusTime = new float[2];
     private bool bonusActive;
 
+    private bool fadeOutStarted;
+
     private void Start()
     {
         Scene curerntscene = SceneManager.GetActiveScene();
-        if ( curerntscene.buildIndex != 0 ) return;
+        if (curerntscene.buildIndex != 0) return;
         Ui_MainMenu = FindObjectOfType<UI_MainMenu>();
         Ui_MainMenu.onDifficultyChange += OnDifficultyChange;
     }
@@ -58,6 +63,7 @@ public class GameMngr : MonoBehaviour
 
     private void Init()
     {
+        AudioMngr.Instance.PlayBackground();
         // Find references
         FindReferences();
 
@@ -76,13 +82,15 @@ public class GameMngr : MonoBehaviour
         scoreSystem.ResetScore();
 
         ballAIController.Init(diffcoulty);
+
+        //AudioMngr.Instance.Play("BackgroundMusic");
     }
 
     private void FindReferences()
     {
         ballController = FindObjectOfType<BallController>();
         ballAIController = FindObjectOfType<AiController>();
-        
+
         scoreSystem = FindObjectOfType<ScoreSystem>();
         failSystems = FindObjectsOfType<FailSystem>();
         mainCamera = FindObjectOfType<FixedCamera>();
@@ -165,7 +173,7 @@ public class GameMngr : MonoBehaviour
 
     #region Score Callbacks
     private void OnScoreChanged(int index, int score, int delta)
-    { 
+    {
         switch (index)
         {
             case 0:
@@ -186,7 +194,7 @@ public class GameMngr : MonoBehaviour
     private void PlayerBallReset()
     {
         totalShots++;
-        
+
         ballController.ResetBall();
     }
     private void OnBallResetComplete(Transform arg0)
@@ -200,18 +208,24 @@ public class GameMngr : MonoBehaviour
     {
         int timeRaianing = (int)(gameTimer.TimeRemaning);
 
-        if(timeRaianing <= bonusTime[1] && timeRaianing >= bonusTime[0] && !bonusActive)
+        if (timeRaianing <= bonusTime[1] && timeRaianing >= bonusTime[0] && !bonusActive)
         {
             bonusActive = true;
-            
-            scoreSystem.EnableBonus();            
+
+            scoreSystem.EnableBonus();
         }
 
-        if(timeRaianing < bonusTime[0] && bonusActive)
+        if (timeRaianing < bonusTime[0] && bonusActive)
         {
             scoreSystem.DisableBonus();
             bonusActive = false;
-        }            
+        }
+
+        if (timeRaianing <= fadeOutDuration && !fadeOutStarted)
+        {
+            fadeOutStarted = true;
+            AudioMngr.Instance.StopWithFade("BackgroundMusic", fadeOutDuration);
+        }
     }
 
     private void OnTimerEnd()
