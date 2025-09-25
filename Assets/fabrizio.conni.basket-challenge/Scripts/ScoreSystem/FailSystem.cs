@@ -1,17 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class FailSystem : MonoBehaviour
+namespace FabrizioConni.BasketChallenge.Score 
 {
-    public UnityAction<int> onFail;
-    private void OnCollisionEnter(Collision collision)
+    public class FailSystem : MonoBehaviour
     {
-        if (collision.gameObject.CompareTag("Player"))
-            onFail?.Invoke(0);
+        public UnityAction<int> onFail;
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (collision.gameObject.CompareTag("Player"))
+                onFail?.Invoke(0);
 
-        else
-            onFail?.Invoke(1);
+            else
+                onFail?.Invoke(1);
+        }
     }
 }

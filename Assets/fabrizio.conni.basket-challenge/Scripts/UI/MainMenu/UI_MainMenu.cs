@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEngine.SceneManagement;
 using UnityEngine.Events;
+using FabrizioConni.BasketChallenge.Audio;
 
 public class UI_MainMenu : MonoBehaviour
 {
@@ -26,7 +26,7 @@ public class UI_MainMenu : MonoBehaviour
         {
             button.RegisterCallback<PointerEnterEvent>(evt =>
             {
-                AudioMngr.Instance.Play("ButtonHover");
+                AudioMngr.Instance.Play("HoverButton");
             });
         }
         // Bottoni principali

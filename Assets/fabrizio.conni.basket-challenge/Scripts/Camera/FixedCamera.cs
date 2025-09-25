@@ -1,42 +1,58 @@
-using System.Collections;
-using System.Collections.Generic;
+using log4net.Util;
 using UnityEngine;
 
-public class FixedCamera : MonoBehaviour
+namespace FabrizioConni.BasketChallenge.Camera
 {
-    private GameObject player; // Reference to the player's transform
-    private Vector3 offset; // Offset from the player
-    [SerializeField]
-    public float smoothSpeed = 0.125f; // Smoothing speed for camera movement
-    private Vector3 HoopLocation;
-
-    void LateUpdate()
+    /// <summary>
+    /// FixedCamera class that follows a player GameObject with a fixed offset.
+    /// The camera smoothly follows the player and can be set to look at a specific location.
+    /// </summary>
+    public class FixedCamera : MonoBehaviour
     {
-        if (player == null) return;
+        #region Serialized Fields
+        [SerializeField]
+        public float smoothSpeed = 0.125f; // Smoothing speed for camera movement
+        #endregion
 
-        Vector3 lookingLocation = (player.transform.position + HoopLocation) * 0.5f;
-        transform.LookAt(lookingLocation); // Optional: Make the camera look at the player
-    }
+        #region Private Fields
+        private GameObject player; // Reference to the player's transform
+        private Vector3 offset; // Offset from the player
+        private Vector3 HoopLocation;
+        #endregion
 
-    public void SetPlayer(GameObject player)
-    {
-        if (player == null) return;
-        print($"Player is {player}");
-        this.player = player;
-        //offset = transform.position - player.transform.position;
+        #region Monobehaviour Callbacks
+        void FixedUpdate()
+        {
+            if (player == null) return;
 
-        offset = player.transform.InverseTransformPoint(transform.position);
-        print($"Offset is {offset}");
-    }
+            Vector3 lookingLocation = (player.transform.position + HoopLocation) * 0.5f;
+            transform.LookAt(lookingLocation); // Optional: Make the camera look at the player
+        }
+        #endregion
 
-    public void SetHoopPosition(Vector3 location)
-    {
-        HoopLocation = location;
-    }
+        #region Public Methods
+        public void SetPlayer(GameObject player)
+        {
+            if (player == null) return;
+            print($"Player is {player}");
+            this.player = player;
+            //offset = transform.position - player.transform.position;
 
-    public void SetPosition ()
-    {
-        transform.position = player.transform.TransformPoint(offset);
-        transform.rotation = player.transform.rotation;
+            offset = player.transform.InverseTransformPoint(transform.position);
+            print($"Offset is {offset}");
+        }
+
+        public void SetHoopPosition(Vector3 location)
+        {
+            HoopLocation = location;
+        }
+
+        public void SetPosition()
+        {
+            transform.position = player.transform.TransformPoint(offset);
+            transform.rotation = player.transform.rotation;
+        }
+        #endregion
     }
 }
+
