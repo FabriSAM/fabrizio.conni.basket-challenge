@@ -237,9 +237,9 @@ namespace FabrizioConni.BasketChallenge.GameManager
         /// <summary>
         /// Called when the fireball is activated. Enables fireball bonus in the score system.
         /// </summary>
-        private void OnFireballActivate()
+        private void OnFireballActivate(bool status)
         {
-            scoreSystem.FireballBonus = true;
+            scoreSystem.FireballBonus = status;
         }
         #endregion
 
@@ -257,6 +257,7 @@ namespace FabrizioConni.BasketChallenge.GameManager
                 case 0:
                     // Player scored: reset ball, update score, add fireball points
                     PlayerBallReset();
+                    scoreSystem.FireballBonus = fireballSystem.IsFireballActive;
                     playerScore = score;
                     fireballSystem.AddFireballPoint(delta);
                     UI_Flyer.Text = delta.ToString();
@@ -317,6 +318,8 @@ namespace FabrizioConni.BasketChallenge.GameManager
             // Start fading out background music as timer approaches zero
             if (timeRaianing <= fadeOutDuration && !fadeOutStarted)
             {
+                Debug.Log("Audio Start Fade Out");
+
                 fadeOutStarted = true;
                 AudioMngr.Instance.StopWithFade("BackgroundMusic", fadeOutDuration);
             }
@@ -327,6 +330,7 @@ namespace FabrizioConni.BasketChallenge.GameManager
         /// </summary>
         private void OnTimerEnd()
         {
+            fadeOutStarted = false;
             SceneManager.LoadScene("EndMenu");
         }
         #endregion

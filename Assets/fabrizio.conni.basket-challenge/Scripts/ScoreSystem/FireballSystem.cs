@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using FabrizioConni.BasketChallenge.TimerNamespace;
+using System.Collections;
 
 namespace FabrizioConni.BasketChallenge.Score
 {
@@ -48,7 +49,7 @@ namespace FabrizioConni.BasketChallenge.Score
         /// UnityAction event invoked when the fireball state is activated.
         /// Other components can subscribe to this event to react to the activation.
         /// </summary>
-        public UnityAction onFireballActivate;
+        public UnityAction<bool> onFireballActivate;
         #endregion
 
         #region Monobehaviour Callbacks
@@ -58,9 +59,21 @@ namespace FabrizioConni.BasketChallenge.Score
         /// </summary>
         private void Start()
         {
+            StartCoroutine(SubscribeDelayed());
+        }
+
+        private IEnumerator SubscribeDelayed()
+        {
+            while (fireballTimer == null)
+                yield return null;
+
             fireballTimer.OnTimerEnd += TimerEnded;
         }
 
+        private void OnDestroy()
+        {
+            fireballTimer.OnTimerEnd -= TimerEnded;
+        }
         /// <summary>
         /// Unity's Update method. Checks each frame if the fireball state should be activated.
         /// If the fireball is not active and the current points reach the maximum, it activates the fireball state,
@@ -69,11 +82,10 @@ namespace FabrizioConni.BasketChallenge.Score
         void Update()
         {
             if (IsFireballActive) return;
-
             if (currentPoint >= maxPoint)
             {
                 IsFireballActive = true;
-                onFireballActivate?.Invoke();
+                onFireballActivate?.Invoke(IsFireballActive);
                 fireballTimer.StartTimer();
             }
         }
@@ -88,6 +100,7 @@ namespace FabrizioConni.BasketChallenge.Score
         {
             IsFireballActive = false;
             currentPoint = 0f;
+            onFireballActivate?.Invoke(IsFireballActive);
         }
         #endregion
 

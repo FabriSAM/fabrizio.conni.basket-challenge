@@ -20,6 +20,8 @@ namespace FabrizioConni.BasketChallenge.Audio
         private List<Sound> sounds;
         #endregion
 
+        private Coroutine fadecoroutine;
+
         [System.Serializable]
         public class Sound
         {
@@ -57,6 +59,7 @@ namespace FabrizioConni.BasketChallenge.Audio
         }
         #endregion
 
+
         #region Public Methods
         public void Play(string name)
         {
@@ -74,7 +77,12 @@ namespace FabrizioConni.BasketChallenge.Audio
 
         public void StopWithFade(string name, float fadeDuration)
         {
-            StartCoroutine(FadeOut(source, fadeDuration));
+            if (fadecoroutine != null)
+            {
+                StopCoroutine(fadecoroutine);
+                fadecoroutine = null;
+            }
+            fadecoroutine = StartCoroutine(FadeOut(source, fadeDuration));
         }
 
         public void SetVolume(AudioSource source, float volume)
@@ -96,9 +104,11 @@ namespace FabrizioConni.BasketChallenge.Audio
                 yield return null;
             }
 
+            Debug.Log("Audio Stopped");
             audioSource.volume = 0f;
             audioSource.Stop();
             audioSource.volume = startVolume;
+            StopCoroutine(fadecoroutine);
         }
         #endregion
     }
