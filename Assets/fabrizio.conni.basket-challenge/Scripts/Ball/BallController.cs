@@ -1,8 +1,10 @@
 ﻿using Codice.CM.Common.Tree;
 using FabrizioConni.BasketChallenge.Utility;
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem.Utilities;
 
 namespace FabrizioConni.BasketChallenge.Ball
 {
@@ -45,6 +47,7 @@ namespace FabrizioConni.BasketChallenge.Ball
         #region Private Fields
         private Rigidbody rb; // Cached Rigidbody reference
         private Vector2 mouseStartPosition; // Mouse position at drag start
+        private Vector2 lastTickPosition; // Mouse position in the last frame   
         private bool dragging; // Is the player currently dragging to aim?
         private bool shot; // Has the ball been shot?
         private bool isCancelled; // Has the shot been cancelled?
@@ -54,6 +57,12 @@ namespace FabrizioConni.BasketChallenge.Ball
         private float vPerfect;
         private float normalizedBlackboardInputValue;
         private float vBlackboardPerfect;
+
+        private float horiz; // Horizontal input value from drag
+        private float vert;  // Vertical input value from drag
+        private float angle; // Calculated angle for the shot in radians
+        private float perfectAngle; // Angle for a perfect shot in radians
+        private int tickCounter; // Counter for fixed update ticks
         #endregion
 
         #region Properties
@@ -67,24 +76,29 @@ namespace FabrizioConni.BasketChallenge.Ball
         #endregion
 
         #region Monobehaviour Callbacks
-        private void Start()
-        {
-            
-        }
 
         private void Awake()
         {
             // Cache Rigidbody and subscribe to input events
             rb = GetComponent<Rigidbody>();
             InputManager.Computer.Shoot.started += ShootStartCallback;
-            InputManager.Computer.Shoot.canceled += ShootCanceledCallback;
-           
+            InputManager.Computer.Shoot.canceled += ShootCancelledCallback;
+
+        }
+        private void Start()
+        {
+            StartCoroutine(InitAfterFrame());
         }
 
+        private IEnumerator InitAfterFrame()
+        {
+            yield return new WaitUntil(() => HoopCenter != null && BackboardCenter != null);
+            UpdatePerfectScoreUI();
+        }
         private void OnEnable()
         {
             // Find and cache the UI element for shot power
-            uPower = GameObject.Find("ShootPower").GetComponent<ShotbarUI>();
+            uPower = GameObject.Find("ShootPower").GetComponent<ShotbarUI>();            
         }
         
 
@@ -92,15 +106,22 @@ namespace FabrizioConni.BasketChallenge.Ball
         {
             // Unsubscribe from input events to avoid memory leaks
             InputManager.Computer.Shoot.started -= ShootStartCallback;
-            InputManager.Computer.Shoot.canceled -= ShootCanceledCallback;
+            InputManager.Computer.Shoot.canceled -= ShootCancelledCallback;
         }
 
         void Update()
         {
+        
             // If not dragging, do nothing
             if (!dragging) return;
             var force = Vector3.zero;
-            CalculateForceFromInput(ref force);
+            InputUpdate();
+            //CalculateForceFromInput(ref force);
+        }
+
+        private void FixedUpdate()
+        {
+            UpdateUI();
         }
         #endregion
 
@@ -119,16 +140,17 @@ namespace FabrizioConni.BasketChallenge.Ball
             // vert = 0 → nearTarget
             // vert = 1 → hoopCenter
             Vector3 dynamicTarget = Vector3.Lerp(nearTarget, farTarget, forceMagnitude);
-            Debug.DrawLine(startPos, dynamicTarget, Color.red);
-            Debug.DrawRay(dynamicTarget, Vector3.up * 0.5f, Color.green);
             return dynamicTarget;
         }
 
-        private void CalculateForceFromInput(ref Vector3 force)
+        private void InputUpdate()
         {
             Vector2 end = InputManager.MousePosition;
             Vector2 delta = end - mouseStartPosition;
+            Vector2 deltaPositionTick = end - lastTickPosition;
+            lastTickPosition = end;
 
+            Debug.Log($"Delta: {deltaPositionTick}");
             // Normalizza il drag rispetto allo schermo
             Vector2 nd = new Vector2(
                 delta.x / Screen.width,
@@ -140,51 +162,110 @@ namespace FabrizioConni.BasketChallenge.Ball
             if (Mathf.Abs(nd.y) < shotParams.deadzone) nd.y = 0f;
 
             // Sensibilità input
-            float horiz = Mathf.Clamp(nd.x * shotParams.horizSensitivity, -1f, 1f);
-            float vert = Mathf.Clamp(nd.y, 0f, 1f);
-
-            // Aggiorna UI potenza
-            uPower.UpdateCursor(vert);
-
-            // Posizioni
-            
-            Vector3 startPos = transform.position;
-            Vector3 targetPos = GetDynamicTarget(vert);
-
-            // Distanza orizzontale (XZ)
-            Vector3 directionXZ = new Vector3(targetPos.x - startPos.x, 0, targetPos.z - startPos.z);
-            float d = directionXZ.magnitude;
-
-            // Altezza relativa
-            float h = targetPos.y - startPos.y;
+            horiz = Mathf.Clamp(nd.x * shotParams.horizSensitivity, -1f, 1f);
+            vert = Mathf.Clamp(nd.y, 0f, 1f);
 
             // Angolo modulato dal drag verticale
             float minAngle = 50f;
             float maxAngle = 60f;
             float angleDeg = Mathf.Lerp(minAngle, maxAngle, vert);
-            float angle = angleDeg * Mathf.Deg2Rad;
+            angle = angleDeg * Mathf.Deg2Rad;
 
+            if (deltaPositionTick.y <= 0f)
+            {
+                tickCounter++;
+                if (tickCounter > 3) // 3 tick consecutivi di movimento verso il basso
+                {
+                    ShootCancelledCallback(new UnityEngine.InputSystem.InputAction.CallbackContext());
+                    return;
+                }
+                return;
+            }
+            tickCounter = 0;
+
+        }
+
+        private void UpdateUI()
+        {
+            // Aggiorna UI potenza
+            uPower.UpdateCursor(vert);
+        }
+
+        private void UpdatePerfectScoreUI()
+        {
+            vPerfect = CalculatePerfectShot(HoopCenter.transform.position, 75f);
+            normalizedPerfectInputValue = uPower.SetGreenZone(vPerfect, 0.05f);
+            vBlackboardPerfect = CalculatePerfectShot(BackboardCenter.transform.position, 50f);
+            normalizedBlackboardInputValue = uPower.SetPurpleZone(vBlackboardPerfect, 0.05f);
+        }
+
+        private Vector3 GetDirection(Vector3 start, Vector3 end)
+        {
+            return new Vector3(end.x - start.x, 0, end.z - start.z);
+        }
+
+        private float GetVelocitySqrt (float direction, float deltaHeight)
+        {
             // Gravità positiva
             float g = Mathf.Abs(Physics.gravity.y);
+            float velocity = (g * direction * direction) / (2 * (direction * Mathf.Tan(angle) - deltaHeight) * Mathf.Cos(angle) * Mathf.Cos(angle));
+            if (velocity <= 0f) return -1f;
 
-            // Calcolo velocità
-            float v2 = (g * d * d) / (2 * (d * Mathf.Tan(angle) - h) * Mathf.Cos(angle) * Mathf.Cos(angle));
-            if (v2 <= 0f)
+            return Mathf.Sqrt(velocity);
+        }
+
+        private void CalculateForceFromInput(ref Vector3 force)
+        {
+            // Posizioni            
+            Vector3 startPos = transform.position;
+            Vector3 targetPos = GetDynamicTarget(vert);
+
+            // Distanza orizzontale (XZ)
+            Vector3 directionXZ = GetDirection(startPos, targetPos);
+            float d = directionXZ.magnitude;
+
+            // Altezza relativa
+            float h = targetPos.y - startPos.y;
+
+            float v = GetVelocitySqrt(d, h);
+            if (v <= 0f)
             {
                 force = Vector3.zero;
                 return;
             }
 
-            float v = Mathf.Sqrt(v2);
+            float perfectShoot = MathF.Abs(vert - normalizedPerfectInputValue);
 
-            if ( vert - normalizedPerfectInputValue < 0.05 && vert - normalizedPerfectInputValue > -0.05)
+            if (perfectShoot < 0.05)
             {
                 Debug.Log("Perfetto!");
                 angle = 75f * Mathf.Deg2Rad; // angolo scelto
                 v = vPerfect;
             }
+            else if (perfectShoot < 0.2)
+            {
+                Debug.Log("Molto bene!");
+                // preferisco ricalcolare la velocità per il bordo (non forzare v qui)
+                angle = 75f * Mathf.Deg2Rad;
+                Vector3 center = HoopCenter.transform.position; // centro del cerchio
+                float radius = 0.11f;                           // raggio (es. ferro canestro)
+                float angleRad = Mathf.Deg2Rad * UnityEngine.Random.Range(0, 360);           // 90° in radianti
 
-            if (vert - normalizedBlackboardInputValue < 0.05 && vert - normalizedBlackboardInputValue > -0.05)
+                // punto sulla circonferenza
+                Vector3 point = new Vector3(
+                    center.x + radius * Mathf.Cos(angleRad),
+                    center.y,
+                    center.z + radius * Mathf.Sin(angleRad)
+                );
+
+                v = vPerfect;
+                targetPos = point;
+                // Ricalcolo direzione e distanza
+                directionXZ = GetDirection(startPos, targetPos);
+            }
+
+            float blackboardShoot = MathF.Abs(vert - normalizedBlackboardInputValue);
+            if (blackboardShoot < 0.05)
             {
                 Debug.Log("Perfetto sul tabellone!");
                 angle = 50f * Mathf.Deg2Rad; // angolo scelto
@@ -193,10 +274,8 @@ namespace FabrizioConni.BasketChallenge.Ball
                 targetPos = BackboardCenter.transform.position;
 
                 // Ricalcolo direzione e distanza
-                directionXZ = new Vector3(targetPos.x - startPos.x, 0, targetPos.z - startPos.z);
+                directionXZ = GetDirection(startPos, targetPos);
             }
-
-
 
             // Direzione ruotata dal drag orizzontale
             Vector3 dirXZ = directionXZ.normalized;
@@ -220,49 +299,33 @@ namespace FabrizioConni.BasketChallenge.Ball
             // Apply the force as an instant velocity change
             rb.AddForce(force, ForceMode.VelocityChange);
 
+            lastTickPosition = Vector2.zero;
             shot = true;
         }
-        private float CalculatePerfectShotVelocity()
+
+        private float CalculatePerfectShot(Vector3 targetPos, float angle)
         {
             Vector3 startPos = transform.position;
-            Vector3 targetPos = HoopCenter.transform.position;
-            float angleRad = 75f * Mathf.Deg2Rad; // angolo scelto
+            float angleRad = angle * Mathf.Deg2Rad; // angolo scelto
 
-            float g = Mathf.Abs(Physics.gravity.y);
+            this.angle = angleRad;
+            // Distanza orizzontale (XZ)
+            Vector3 directionXZ = GetDirection(startPos, targetPos);
+            float d = directionXZ.magnitude;
 
-            // distanza orizzontale (XZ)
-            Vector3 dirXZ = new Vector3(targetPos.x - startPos.x, 0, targetPos.z - startPos.z);
-            float d = dirXZ.magnitude;
-
-            // differenza di altezza
+            // Altezza relativa
             float h = targetPos.y - startPos.y;
 
-            // formula fisica
-            float numerator = g * d * d;
-            float denominator = 2 * (d * Mathf.Tan(angleRad) - h) * Mathf.Cos(angleRad) * Mathf.Cos(angleRad);
+            float v = GetVelocitySqrt(d, h);
+            if (v <= 0f)
+            {
+                return -1;
+            }
+            return v;
 
-            if (denominator <= 0) return -1f; // nessuna soluzione valida
-
-            return Mathf.Sqrt(numerator / denominator);
         }
 
-        private float CalculatePerfectBlackboardShotVelocity()
-        {
-            Vector3 startPos = transform.position;
-            Vector3 targetPos = BackboardCenter.transform.position;
-            float angleRad = 50f * Mathf.Deg2Rad; // angolo scelto
-            float g = Mathf.Abs(Physics.gravity.y);
-            // distanza orizzontale (XZ)
-            Vector3 dirXZ = new Vector3(targetPos.x - startPos.x, 0, targetPos.z - startPos.z);
-            float d = dirXZ.magnitude;
-            // differenza di altezza
-            float h = targetPos.y - startPos.y;
-            // formula fisica
-            float numerator = g * d * d;
-            float denominator = 2 * (d * Mathf.Tan(angleRad) - h) * Mathf.Cos(angleRad) * Mathf.Cos(angleRad);
-            if (denominator <= 0) return -1f; // nessuna soluzione valida
-            return Mathf.Sqrt(numerator / denominator);
-        }
+
         #endregion
 
         #region Public Methods    
@@ -285,16 +348,15 @@ namespace FabrizioConni.BasketChallenge.Ball
             trajectoryLine.positionCount = 0;
             // Notify listeners that the reset is complete
             onResetComplete?.Invoke(transform);
-            vPerfect = CalculatePerfectShotVelocity();
-            normalizedPerfectInputValue = uPower.SetGreenZone(vPerfect, 0.05f);
-            vBlackboardPerfect = CalculatePerfectBlackboardShotVelocity();
-            normalizedBlackboardInputValue = uPower.SetPurpleZone(vBlackboardPerfect, 0.05f);
+
+
+            UpdatePerfectScoreUI();
         }
         #endregion
 
         #region Callbacks
         // Called when the shoot input is released/canceled
-        private void ShootCanceledCallback(UnityEngine.InputSystem.InputAction.CallbackContext context)
+        private void ShootCancelledCallback(UnityEngine.InputSystem.InputAction.CallbackContext context)
         {
             if (shot) return;
             if (isCancelled) return;
