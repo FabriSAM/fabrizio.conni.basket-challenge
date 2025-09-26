@@ -33,7 +33,6 @@ namespace FabrizioConni.BasketChallenge.Score
         private int aiTotalScore; // AI's total score.
         private int aiCurrentIncrementScore; // Current score increment for the AI (reset after each scoring event).
         private int lastSoundIndex; // Index of the last sound played to avoid repetition.
-        private int[] bonusValues = new int[] { 4, 6, 8 }; // Possible bonus values for the player.
         #endregion
 
         #region Properties
@@ -216,8 +215,20 @@ namespace FabrizioConni.BasketChallenge.Score
         /// </summary>
         public void EnableBonus()
         {
-            int index = Random.Range(0, bonusValues.Length);
-            int newBonus = bonusValues[index];
+            float index = Random.Range(0f,1f);
+            int newBonus;
+            if (index < 0.5f)
+            {
+                newBonus = 4;
+            }
+            else if ( index < 0.8f)
+            {
+                newBonus = 6;
+            }
+            else
+            {
+                newBonus = 8;
+            }
             currentBonus = newBonus;
             bonusCollider.enabled = true;
             bonusArea.SetActive(true);
