@@ -448,6 +448,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 970223d2f58f9814eb9c20d56c836781, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &909876324 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4780627509025439009, guid: aee55057c54249e4babe943d1283bfc8, type: 3}
+  m_PrefabInstance: {fileID: 5357902849960881820}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &916246496
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -972,11 +977,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4495846057822547065, guid: 39df63c65121ca54585c87dd04589290, type: 3}
   m_PrefabInstance: {fileID: 916246496}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1493240213 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5357902850917246729, guid: aee55057c54249e4babe943d1283bfc8, type: 3}
-  m_PrefabInstance: {fileID: 5357902849960881820}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1752568296 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3133498875991405556, guid: 15cb29054438a8f4cb56d9b51d0629ab, type: 3}
@@ -1222,7 +1222,15 @@ PrefabInstance:
     - target: {fileID: 1292057261022068117, guid: 800ba6c5b2472fe48a56c7e1df76c0c3, type: 3}
       propertyPath: HoopCenter
       value: 
-      objectReference: {fileID: 1493240213}
+      objectReference: {fileID: 9720980}
+    - target: {fileID: 1292057261022068117, guid: 800ba6c5b2472fe48a56c7e1df76c0c3, type: 3}
+      propertyPath: BackboardCenter
+      value: 
+      objectReference: {fileID: 909876324}
+    - target: {fileID: 1292057261022068117, guid: 800ba6c5b2472fe48a56c7e1df76c0c3, type: 3}
+      propertyPath: shotParams.deadzone
+      value: 0.02
+      objectReference: {fileID: 0}
     - target: {fileID: 1292057261022068119, guid: 800ba6c5b2472fe48a56c7e1df76c0c3, type: 3}
       propertyPath: m_Name
       value: Ball
@@ -1293,6 +1301,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1256038573349477147, guid: aee55057c54249e4babe943d1283bfc8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.616
+      objectReference: {fileID: 0}
+    - target: {fileID: 1256038573349477147, guid: aee55057c54249e4babe943d1283bfc8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.002
+      objectReference: {fileID: 0}
     - target: {fileID: 5357902850917246729, guid: aee55057c54249e4babe943d1283bfc8, type: 3}
       propertyPath: m_Name
       value: Hoop

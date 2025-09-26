@@ -62,10 +62,8 @@ namespace FabrizioConni.BasketChallenge.Audio
         {
             if (!soundDictionary.ContainsKey(name))
             {
-                Debug.Log("Error Playing sound: " + name);
                 return;
             }
-            Debug.Log("Playing sound: " + name);
             sfx.PlayOneShot(soundDictionary[name]);
         }
 
