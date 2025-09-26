@@ -30,6 +30,7 @@ namespace FabrizioConni.BasketChallenge.GameManager
         private FailSystem[] failSystems; // Array of FailSystem components (for fail detection)
         private FixedCamera mainCamera; // Reference to the main camera controller
         private UI_MainMenu Ui_MainMenu; // Reference to the main menu UI
+        private UI_Flyer UI_Flyer; // Reference to the UI_Flyer component
         private FireballSystem fireballSystem; // Reference to the FireballSystem
         private int playerScore; // Player's current score
         private int failCount; // Number of player fails
@@ -121,6 +122,8 @@ namespace FabrizioConni.BasketChallenge.GameManager
             mainCamera.SetPlayer(ballController.gameObject);
             mainCamera.SetHoopPosition(ballController.HoopCenterLocation);
 
+            UI_Flyer.SetPlayer(ballController.gameObject);
+
             // Randomly determine the bonus time window
             bonusTime[1] = UnityEngine.Random.Range(5f, 60f);
             bonusTime[0] = bonusTime[1] - 10f;
@@ -146,6 +149,7 @@ namespace FabrizioConni.BasketChallenge.GameManager
             mainCamera = FindObjectOfType<FixedCamera>();
             gameTimer = GameObject.Find("Timer").GetComponent<Timer>();
             fireballSystem = FindObjectOfType<FireballSystem>();
+            UI_Flyer = FindObjectOfType<UI_Flyer>(true);
         }
         #endregion
 
@@ -192,6 +196,7 @@ namespace FabrizioConni.BasketChallenge.GameManager
 
             // Unsubscribe from ball reset complete event
             ballController.onResetComplete -= OnBallResetComplete;
+            ballController.onShoot -= mainCamera.SetShooting;
 
             // Unsubscribe from timer events
             gameTimer.OnTimerEnd -= OnTimerEnd;
@@ -254,6 +259,7 @@ namespace FabrizioConni.BasketChallenge.GameManager
                     PlayerBallReset();
                     playerScore = score;
                     fireballSystem.AddFireballPoint(delta);
+                    UI_Flyer.Text = delta.ToString();
                     break;
                 case 1:
                     // AI scored: reset AI ball
