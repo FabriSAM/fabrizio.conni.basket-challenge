@@ -73,6 +73,7 @@ namespace FabrizioConni.BasketChallenge.Ball
         #region Actions
         // Event invoked when the ball reset is complete
         public UnityAction<Transform> onResetComplete;
+        public Action onShoot;
         #endregion
 
         #region Monobehaviour Callbacks
@@ -301,6 +302,7 @@ namespace FabrizioConni.BasketChallenge.Ball
 
             lastTickPosition = Vector2.zero;
             shot = true;
+            onShoot?.Invoke();
         }
 
         private float CalculatePerfectShot(Vector3 targetPos, float angle)
