@@ -131,6 +131,7 @@ namespace FabrizioConni.BasketChallenge.GameManager
 
             // Initialize AI with selected difficulty
             ballAIController.Init(diffcoulty);
+            ballController.ResetBall();
         }
 
         /// <summary>
