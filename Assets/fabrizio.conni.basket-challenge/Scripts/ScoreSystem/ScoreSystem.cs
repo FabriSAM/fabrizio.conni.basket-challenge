@@ -229,8 +229,6 @@ namespace FabrizioConni.BasketChallenge.Score
             {
                 newBonus = 8;
             }
-
-            Debug.Log("Index: " + index);
             currentBonus = newBonus;
             bonusCollider.enabled = true;
             bonusArea.SetActive(true);
