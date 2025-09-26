@@ -166,6 +166,7 @@ namespace FabrizioConni.BasketChallenge.GameManager
 
             // Subscribe to ball reset complete event
             ballController.onResetComplete += OnBallResetComplete;
+            ballController.onShoot += mainCamera.SetShooting;
 
             // Subscribe to timer events
             gameTimer.OnTimerEnd += OnTimerEnd;
