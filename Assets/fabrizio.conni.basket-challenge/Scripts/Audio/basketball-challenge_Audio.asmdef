@@ -1,0 +1,16 @@
+{
+    "name": "basketball-challenge_Audio",
+    "rootNamespace": "",
+    "references": [
+        "GUID:d39d710d7f92b004ba78e755779f7874"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
