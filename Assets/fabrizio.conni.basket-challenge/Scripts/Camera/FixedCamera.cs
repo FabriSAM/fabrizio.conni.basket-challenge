@@ -41,8 +41,6 @@ namespace FabrizioConni.BasketChallenge.Camera
             // Calcola la distanza tra la camera e la posizione desiderata
             float distance = Vector3.Distance(transform.position, HoopLocation);
 
-            Debug.Log(distance);
-
             // Se la distanza è maggiore di una soglia, effettua il lerp, altrimenti posiziona direttamente
             float lerpThreshold = 1.5f;
             if (distance > lerpThreshold)

@@ -151,7 +151,6 @@ namespace FabrizioConni.BasketChallenge.Ball
             Vector2 deltaPositionTick = end - lastTickPosition;
             lastTickPosition = end;
 
-            Debug.Log($"Delta: {deltaPositionTick}");
             // Normalizza il drag rispetto allo schermo
             Vector2 nd = new Vector2(
                 delta.x / Screen.width,
@@ -239,13 +238,11 @@ namespace FabrizioConni.BasketChallenge.Ball
 
             if (perfectShoot < 0.05)
             {
-                Debug.Log("Perfetto!");
                 angle = 75f * Mathf.Deg2Rad; // angolo scelto
                 v = vPerfect;
             }
             else if (perfectShoot < 0.2)
             {
-                Debug.Log("Molto bene!");
                 // preferisco ricalcolare la velocità per il bordo (non forzare v qui)
                 angle = 75f * Mathf.Deg2Rad;
                 Vector3 center = HoopCenter.transform.position; // centro del cerchio
@@ -268,7 +265,6 @@ namespace FabrizioConni.BasketChallenge.Ball
             float blackboardShoot = MathF.Abs(vert - normalizedBlackboardInputValue);
             if (blackboardShoot < 0.05)
             {
-                Debug.Log("Perfetto sul tabellone!");
                 angle = 50f * Mathf.Deg2Rad; // angolo scelto
                 v = vBlackboardPerfect * 0.95f;
 

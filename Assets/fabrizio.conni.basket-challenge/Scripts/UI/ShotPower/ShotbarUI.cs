@@ -38,8 +38,6 @@ public class ShotbarUI : MonoBehaviour
             correctedX
         );
 
-        Debug.Log($"PurpleZone Normalizzato: {normalizedCorrected}");
-
         return normalizedCorrected;
     }
     // Imposta la zona verde in base alla velocità perfetta
@@ -56,7 +54,6 @@ public class ShotbarUI : MonoBehaviour
 
         float correctedX = xPos - pivotOffset;
 
-        Debug.Log($"Posizione X corretta: {correctedX}");
 
         // Aggiorna dimensione e posizione
         greenZone.localPosition = new Vector3(
